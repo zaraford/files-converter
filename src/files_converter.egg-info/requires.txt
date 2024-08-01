@@ -1,0 +1,8 @@
+Pillow
+PyPDF2
+calibre
+ffmpeg-python
+pygobject
+python-docx
+python-magic
+python-nautilus

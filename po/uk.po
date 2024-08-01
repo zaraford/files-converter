@@ -1,0 +1,47 @@
+# Ukrainian translations for PACKAGE package.
+# Copyright (C) 2024 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# zaraford <vlad.lodgyk@gmail.com>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-07-20 20:06+0300\n"
+"PO-Revision-Date: 2024-07-20 20:07+0300\n"
+"Last-Translator: zaraford <vlad.lodgyk@gmail.com>\n"
+"Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+
+#: src/files_converter/ui.py:13
+msgid "Files Converter"
+msgstr ""
+
+#: src/files_converter/ui.py:38
+msgid "Target Format:"
+msgstr ""
+
+#: src/files_converter/ui.py:44 src/files_converter/ui.py:118
+msgid "Convert"
+msgstr ""
+
+#: src/files_converter/ui.py:72
+msgid "Select Output Directory"
+msgstr ""
+
+#: src/files_converter/ui.py:96
+msgid "Conversion Completed"
+msgstr ""
+
+#: src/files_converter/ui.py:98
+msgid "All files have been successfully converted."
+msgstr ""
+
+#: src/files_converter/ui.py:119
+msgid "Convert selected files"
+msgstr ""

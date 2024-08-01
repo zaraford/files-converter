@@ -1,0 +1,25 @@
+#!/usr/bin/make -f
+
+export PYBUILD_NAME=files-converter
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_install:
+	dh_auto_install
+	install -D -m 644 debian/files-converter.desktop \
+		debian/files-converter/usr/share/applications/files-converter.desktop
+
+override_dh_installchangelogs:
+	dh_installchangelogs
+	rm -f debian/files-converter/usr/share/doc/files-converter/changelog
+
+# Ensure icons are installed correctly
+override_dh_install:
+	dh_install
+	mkdir -p debian/files-converter/usr/share/icons/hicolor
+	cp -R icons/hicolor/* debian/files-converter/usr/share/icons/hicolor/
+
+# Use the separate postinst script
+override_dh_installdeb:
+	dh_installdeb
