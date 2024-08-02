@@ -152,6 +152,7 @@ class FileCard(Gtk.ListBoxRow):
 
     def on_delete_clicked(self, button):
         self.parent_window.remove_file(self)
+        self.parent_window.update_clear_all_button()
 
     def on_format_changed(self, combo):
         self.target_format = combo.get_active_text()
@@ -248,7 +249,33 @@ class ConversionWindow(Gtk.Window):
         self.file_list.set_selection_mode(Gtk.SelectionMode.NONE)
 
         scrolled_window.add(self.file_list)
-        main_box.pack_start(scrolled_window, True, True, 0)
+
+        # Add a container for the file list and clear all button
+        file_list_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        main_box.pack_start(file_list_container, True, True, 0)
+
+        # Move the existing file list into this container
+        file_list_container.pack_start(scrolled_window, True, True, 0)
+
+        # Create the clear all button (initially hidden)
+        self.clear_all_button = Gtk.Button(label="Clear All")
+        self.clear_all_button.set_margin_left(20)
+        self.clear_all_button.set_margin_right(20)
+        self.clear_all_button.connect("clicked", self.on_clear_all_clicked)
+        self.clear_all_button.set_no_show_all(True)  # Don't show by default
+        file_list_container.pack_start(self.clear_all_button, False, False, 0)
+
+        # Separator
+        self.separator_clear = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        self.separator_clear.set_margin_right(20)
+        self.separator_clear.set_margin_left(20)
+        self.separator_clear.set_no_show_all(True)
+        main_box.pack_start(
+            self.separator_clear,
+            False,
+            False,
+            5,
+        )
 
         # Progress bar
         self.progress_bar = Gtk.ProgressBar()
@@ -306,6 +333,7 @@ class ConversionWindow(Gtk.Window):
                 file_card = FileCard(file_path, self.converter, self)
                 self.file_list.add(file_card)
             self.file_list.show_all()
+            self.update_clear_all_button()
 
         dialog.destroy()
 
@@ -411,7 +439,7 @@ class ConversionWindow(Gtk.Window):
 
         # Schedule the progress bar reset after 5 seconds
         GLib.timeout_add_seconds(5, self.reset_progress_bar)
-        
+
     def reset_progress_bar(self):
         self.progress_bar.set_fraction(0.0)
         self.progress_bar.set_text("0%")
@@ -423,6 +451,35 @@ class ConversionWindow(Gtk.Window):
 
     def remove_file(self, file_card):
         self.file_list.remove(file_card)
+        self.update_clear_all_button()
+
+    def update_clear_all_button(self):
+        file_count = len(self.file_list.get_children())
+        if file_count > 5:
+            self.clear_all_button.show()
+            self.separator_clear.show()
+        else:
+            self.clear_all_button.hide()
+            self.separator_clear.hide()
+
+    def on_clear_all_clicked(self, button):
+        dialog = Gtk.MessageDialog(
+            transient_for=self,
+            flags=0,
+            message_type=Gtk.MessageType.QUESTION,
+            buttons=Gtk.ButtonsType.YES_NO,
+            text="Clear all files?",
+        )
+        dialog.format_secondary_text("Are you sure you want to remove all files from the list?")
+        response = dialog.run()
+        if response == Gtk.ResponseType.YES:
+            self.clear_all_files()
+        dialog.destroy()
+
+    def clear_all_files(self):
+        for child in self.file_list.get_children():
+            self.file_list.remove(child)
+        self.update_clear_all_button()
 
     def choose_output_directory(self):
         dialog = Gtk.FileChooserDialog(
@@ -476,6 +533,7 @@ class ConversionWindow(Gtk.Window):
         if response == Gtk.ResponseType.OK:
             folder_path = dialog.get_filename()
             self.add_folder(folder_path)
+            self.update_clear_all_button()
 
         dialog.destroy()
 
@@ -713,6 +771,7 @@ class ConversionWindow(Gtk.Window):
     def add_file(self, file_path):
         file_card = FileCard(file_path, self.converter, self)
         self.file_list.add(file_card)
+        self.update_clear_all_button()
         self.file_list.show_all()
 
     def show_progress_dialog(self, title, message):
