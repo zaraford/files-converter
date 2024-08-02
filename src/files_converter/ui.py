@@ -177,6 +177,7 @@ class ConversionWindow(Gtk.Window):
         self.batch_size = 100
         self.scan_start_time = None
         self.clear_all_button = None
+        self.added_files = set()
         self.settings = self.load_settings()
         self.apply_settings()
         self.build_ui()
@@ -330,10 +331,7 @@ class ConversionWindow(Gtk.Window):
         if response == Gtk.ResponseType.OK:
             file_paths = dialog.get_filenames()
             for file_path in file_paths:
-                file_card = FileCard(file_path, self.converter, self)
-                self.file_list.add(file_card)
-            self.file_list.show_all()
-            self.update_clear_all_button()
+                self.add_file(file_path)
 
         dialog.destroy()
 
@@ -451,6 +449,7 @@ class ConversionWindow(Gtk.Window):
 
     def remove_file(self, file_card):
         self.file_list.remove(file_card)
+        self.added_files.remove(file_card.get_file_path())
         self.update_clear_all_button()
 
     def update_clear_all_button(self):
@@ -479,6 +478,7 @@ class ConversionWindow(Gtk.Window):
     def clear_all_files(self):
         for child in self.file_list.get_children():
             self.file_list.remove(child)
+        self.added_files.clear()
         self.update_clear_all_button()
 
     def choose_output_directory(self):
@@ -708,7 +708,7 @@ class ConversionWindow(Gtk.Window):
                     file_paths,
                     chunksize=chunk_size,
                 ):
-                    if supported_file:
+                    if supported_file and supported_file not in self.added_files:
                         self.file_queue.put(supported_file)
 
         self.processing_complete.set()
@@ -731,8 +731,9 @@ class ConversionWindow(Gtk.Window):
         start_time = time.time()
         while not self.file_queue.empty() and files_processed < self.batch_size:
             file_path = self.file_queue.get()
-            self.add_file(file_path)
-            files_processed += 1
+            if file_path not in self.added_files:
+                self.add_file(file_path)
+                files_processed += 1
 
             # Check if we've spent too much time adding files
             if time.time() - start_time > 0.1:  # 100ms
@@ -769,10 +770,12 @@ class ConversionWindow(Gtk.Window):
             return f"{int(minutes)} minutes and {seconds:.2f} seconds"
 
     def add_file(self, file_path):
-        file_card = FileCard(file_path, self.converter, self)
-        self.file_list.add(file_card)
-        self.update_clear_all_button()
-        self.file_list.show_all()
+        if file_path not in self.added_files:
+            file_card = FileCard(file_path, self.converter, self)
+            self.file_list.add(file_card)
+            self.update_clear_all_button()
+            self.file_list.show_all()
+            self.added_files.add(file_path)
 
     def show_progress_dialog(self, title, message):
         if self.notifications_enabled:
