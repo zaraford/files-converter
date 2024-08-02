@@ -1,11 +1,13 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, Pango, GLib
+from gi.repository import Gtk, Gdk, Pango, GLib, Gio
 import gettext
 import itertools
 import multiprocessing
+import json
 import os
+from pathlib import Path
 import sys
 import threading
 import time
@@ -59,6 +61,7 @@ class FileCard(Gtk.ListBoxRow):
         self.file_name_label = Gtk.Label(label=os.path.basename(self.file_path))
         self.file_name_label.set_halign(Gtk.Align.START)
         self.file_name_label.set_ellipsize(Pango.EllipsizeMode.END)
+        self.file_name_label.set_tooltip_text(os.path.basename(self.file_path))
         info_box.pack_start(self.file_name_label, False, False, 0)
 
         self.metadata_label = Gtk.Label(label=self.get_file_metadata())
@@ -98,7 +101,7 @@ class FileCard(Gtk.ListBoxRow):
         right_box.pack_start(self.to_combo, False, False, 0)
 
         # Action buttons
-        action_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        action_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         card.pack_start(action_box, False, False, 0)
 
         delete_button = Gtk.Button.new_from_icon_name("edit-delete-symbolic", Gtk.IconSize.BUTTON)
@@ -172,7 +175,9 @@ class ConversionWindow(Gtk.Window):
         self.processing_complete = threading.Event()
         self.batch_size = 100
         self.scan_start_time = None
-        self.load_settings()
+        self.clear_all_button = None
+        self.settings = self.load_settings()
+        self.apply_settings()
         self.build_ui()
 
     def build_ui(self):
@@ -310,9 +315,14 @@ class ConversionWindow(Gtk.Window):
             self.show_error_dialog("No files selected for conversion.")
             return
 
-        output_dir = self.choose_output_directory()
-        if not output_dir:
-            return
+        if self.default_output_dir == "Ask each time":
+            output_dir = self.choose_output_directory()
+            if not output_dir:
+                return
+        elif self.default_output_dir == "Choose directory":
+            output_dir = self.custom_output_dir
+        else:  # "Same as input"
+            output_dir = None  # Will be set per file in the conversion process
 
         self.convert_button.set_sensitive(False)
         self.progress_bar.set_fraction(0.0)
@@ -341,6 +351,9 @@ class ConversionWindow(Gtk.Window):
                         f"No valid target format available for {os.path.basename(input_path)}",
                     )
                     continue
+
+                if output_dir is None:  # "Same as input"
+                    output_dir = os.path.dirname(input_path)
 
                 output_path = os.path.join(
                     output_dir,
@@ -396,6 +409,15 @@ class ConversionWindow(Gtk.Window):
         self.progress_bar.set_text("Conversion completed")
         self.show_info_dialog("Conversion completed successfully!")
 
+        # Schedule the progress bar reset after 5 seconds
+        GLib.timeout_add_seconds(5, self.reset_progress_bar)
+        
+    def reset_progress_bar(self):
+        self.progress_bar.set_fraction(0.0)
+        self.progress_bar.set_text("0%")
+        # Return False to ensure this function is only called once
+        return False
+
     def on_cancel_clicked(self, widget):
         self.destroy()
 
@@ -430,16 +452,17 @@ class ConversionWindow(Gtk.Window):
         dialog.destroy()
 
     def show_info_dialog(self, message):
-        dialog = Gtk.MessageDialog(
-            transient_for=self,
-            flags=0,
-            message_type=Gtk.MessageType.INFO,
-            buttons=Gtk.ButtonsType.OK,
-            text="Information",
-        )
-        dialog.format_secondary_text(message)
-        dialog.run()
-        dialog.destroy()
+        if self.notifications_enabled:
+            dialog = Gtk.MessageDialog(
+                transient_for=self,
+                flags=0,
+                message_type=Gtk.MessageType.INFO,
+                buttons=Gtk.ButtonsType.OK,
+                text="Information",
+            )
+            dialog.format_secondary_text(message)
+            dialog.run()
+            dialog.destroy()
 
     def on_open_folder_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(
@@ -457,16 +480,20 @@ class ConversionWindow(Gtk.Window):
         dialog.destroy()
 
     def open_settings(self, widget):
-        dialog = SettingsDialog(self)
+        dialog = SettingsDialog(self, self.settings)
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
-            # Save settings
-            lang = dialog.lang_combo.get_active_text()
-            theme = dialog.theme_combo.get_active_text()
-            output_dir = dialog.dir_combo.get_active_text()
-            # Save these settings to a file or GSettings
-            self.save_settings(lang, theme, output_dir)
+            # Update settings
+            self.settings["language"] = dialog.lang_combo.get_active_text()
+            self.settings["theme"] = dialog.theme_combo.get_active_text()
+            self.settings["output_directory"] = dialog.dir_combo.get_active_text()
+            self.settings["custom_directory"] = dialog.custom_dir_label.get_text()
+            self.settings["notifications_enabled"] = dialog.notifications_switch.get_active()
+
+            # Save and apply the new settings
+            self.save_settings()
+            self.apply_settings()
 
         dialog.destroy()
 
@@ -494,13 +521,104 @@ class ConversionWindow(Gtk.Window):
     def donate(self, widget):
         Gtk.show_uri_on_window(self, "https://ko-fi.com/zaraford", Gdk.CURRENT_TIME)
 
-    def save_settings(self, lang, theme, output_dir):
-        # Implement saving settings to a file or GSettings
-        pass
+    def get_settings_path(self):
+        config_dir = Path.home() / ".config" / "files-converter"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        return config_dir / "settings.json"
+
+    def save_settings(self):
+        settings_path = self.get_settings_path()
+        with open(settings_path, "w") as f:
+            json.dump(self.settings, f, indent=2)
 
     def load_settings(self):
-        # Implement loading settings from a file or GSettings
-        pass
+        settings_path = self.get_settings_path()
+        default_settings = {
+            "language": "English",
+            "theme": "System default",
+            "output_directory": "Same as input",
+            "custom_directory": "",
+            "notifications_enabled": True,
+        }
+
+        if settings_path.exists():
+            try:
+                with open(settings_path, "r") as f:
+                    return json.load(f)
+            except json.JSONDecodeError:
+                self.show_info_dialog("Error reading settings file. Using default settings.")
+                return default_settings
+        else:
+            return default_settings
+
+    def apply_settings(self):
+        # Apply language
+        if self.settings["language"] == "Українська":
+            # Implement language change logic here
+            pass  # For now, we'll just pass
+
+        # Apply theme
+        self.set_theme(self.settings["theme"])
+
+        # Apply output directory setting
+        self.default_output_dir = self.settings["output_directory"]
+        if self.default_output_dir == "Choose directory":
+            self.custom_output_dir = self.settings["custom_directory"]
+        else:
+            self.custom_output_dir = None
+
+        # Apply notifications setting
+        self.notifications_enabled = self.settings["notifications_enabled"]
+
+        # Update UI elements if necessary
+        self.update_ui_for_settings()
+
+    def set_theme(self, theme):
+        settings = Gtk.Settings.get_default()
+        if theme == "System default":
+            # Reset to system default
+            settings.reset_property("gtk-application-prefer-dark-theme")
+        elif theme == "Light":
+            settings.set_property("gtk-application-prefer-dark-theme", False)
+        elif theme == "Dark":
+            settings.set_property("gtk-application-prefer-dark-theme", True)
+
+        # Force theme update
+        self.queue_draw()
+        for widget in self.get_children():
+            widget.queue_draw()
+
+    def get_current_system_theme(self):
+        settings = Gio.Settings.new("org.gnome.desktop.interface")
+        color_scheme = settings.get_string("color-scheme")
+        if color_scheme == "prefer-dark":
+            return "Dark"
+        else:
+            return "Light"
+
+    def update_ui_for_settings(self):
+        # Update language-specific UI elements
+        if self.settings["language"] == "Українська":
+            # Update labels, button texts, etc. to Ukrainian
+            pass  # Implement when adding full language support
+
+        # Update output directory related UI elements if any
+        if hasattr(self, "output_dir_label"):
+            if self.default_output_dir == "Choose directory":
+                self.output_dir_label.set_text(f"Output Directory: {self.custom_output_dir}")
+            else:
+                self.output_dir_label.set_text(f"Output Directory: {self.default_output_dir}")
+
+        # Update theme-related UI elements
+        if self.settings["theme"] == "System default":
+            current_system_theme = self.get_current_system_theme()
+            self.set_theme(current_system_theme)
+        else:
+            self.set_theme(self.settings["theme"])
+
+        # Update any UI elements related to notifications if necessary
+        # For example, if there's a notifications indicator:
+        # self.notifications_indicator.set_visible(self.notifications_enabled)
 
     def add_file_or_folder(self, path):
         if os.path.isfile(path):
@@ -598,15 +716,16 @@ class ConversionWindow(Gtk.Window):
         self.file_list.show_all()
 
     def show_progress_dialog(self, title, message):
-        self.progress_dialog = Gtk.MessageDialog(
-            transient_for=self,
-            flags=0,
-            message_type=Gtk.MessageType.INFO,
-            buttons=Gtk.ButtonsType.NONE,
-            text=title,
-        )
-        self.progress_dialog.format_secondary_text(message)
-        self.progress_dialog.show_all()
+        if self.notifications_enabled:
+            self.progress_dialog = Gtk.MessageDialog(
+                transient_for=self,
+                flags=0,
+                message_type=Gtk.MessageType.INFO,
+                buttons=Gtk.ButtonsType.NONE,
+                text=title,
+            )
+            self.progress_dialog.format_secondary_text(message)
+            self.progress_dialog.show_all()
 
     def hide_progress_dialog(self):
         if hasattr(self, "progress_dialog"):
@@ -615,47 +734,151 @@ class ConversionWindow(Gtk.Window):
 
 
 class SettingsDialog(Gtk.Dialog):
-    def __init__(self, parent):
+    def __init__(self, parent, current_settings):
         super().__init__(title="Preferences", transient_for=parent, flags=0)
         self.add_buttons(
-            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OK, Gtk.ResponseType.OK
+            Gtk.STOCK_OK,
+            Gtk.ResponseType.OK,
+            Gtk.STOCK_CANCEL,
+            Gtk.ResponseType.CANCEL,
         )
 
-        self.set_default_size(300, 200)
+        self.set_default_size(400, 250)
+        self.set_border_width(10)
 
         box = self.get_content_area()
+        box.set_spacing(10)
+
+        # Create a grid to organize the settings
+        self.grid = Gtk.Grid()
+        self.grid.set_column_spacing(20)
+        self.grid.set_row_spacing(10)
+        box.pack_start(self.grid, True, True, 0)
 
         # Language setting
         lang_label = Gtk.Label("Language:")
+        lang_label.set_halign(Gtk.Align.START)
         self.lang_combo = Gtk.ComboBoxText()
+        self.lang_combo.set_hexpand(True)
         self.lang_combo.append_text("English")
         self.lang_combo.append_text("Українська")
-        self.lang_combo.set_active(0)
+        self.lang_combo.set_active(0 if current_settings["language"] == "English" else 1)
 
         # Theme setting
         theme_label = Gtk.Label("Theme:")
+        theme_label.set_halign(Gtk.Align.START)
         self.theme_combo = Gtk.ComboBoxText()
-        self.theme_combo.append_text("System default")
-        self.theme_combo.append_text("Light")
-        self.theme_combo.append_text("Dark")
-        self.theme_combo.set_active(0)
+        self.theme_combo.set_hexpand(True)
+        themes = ["System default", "Light", "Dark"]
+        for theme in themes:
+            self.theme_combo.append_text(theme)
+        self.theme_combo.set_active(themes.index(current_settings["theme"]))
+        self.theme_combo.connect("changed", self.on_theme_changed)
+
+        # Create a box for the theme combo and icon
+        theme_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        theme_box.pack_start(self.theme_combo, True, True, 0)
+
+        # Add exclamation mark icon
+        self.theme_icon = Gtk.Image.new_from_icon_name("dialog-info-symbolic", Gtk.IconSize.BUTTON)
+        self.theme_icon.set_tooltip_text("")
+        theme_box.pack_start(self.theme_icon, False, False, 0)
 
         # Output directory setting
         dir_label = Gtk.Label("Default output directory:")
+        dir_label.set_halign(Gtk.Align.START)
         self.dir_combo = Gtk.ComboBoxText()
-        self.dir_combo.append_text("Same as input")
-        self.dir_combo.append_text("Choose directory")
-        self.dir_combo.append_text("Ask each time")
-        self.dir_combo.set_active(0)
+        self.dir_combo.set_hexpand(True)
+        dir_options = ["Same as input", "Choose directory", "Ask each time"]
+        for option in dir_options:
+            self.dir_combo.append_text(option)
+        self.dir_combo.set_active(dir_options.index(current_settings["output_directory"]))
+        self.dir_combo.connect("changed", self.on_dir_combo_changed)
 
-        box.add(lang_label)
-        box.add(self.lang_combo)
-        box.add(theme_label)
-        box.add(self.theme_combo)
-        box.add(dir_label)
-        box.add(self.dir_combo)
+        # Custom directory options
+        self.custom_dir_button = Gtk.Button("Choose custom directory")
+        self.custom_dir_button.connect("clicked", self.on_custom_dir_clicked)
+        self.custom_dir_label = Gtk.Label(current_settings["custom_directory"])
+        self.custom_dir_label.set_halign(Gtk.Align.START)
+        self.custom_dir_label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+        self.custom_dir_label.set_max_width_chars(30)
+
+        # Add widgets to the grid
+        self.grid.attach(lang_label, 0, 0, 1, 1)
+        self.grid.attach(self.lang_combo, 1, 0, 1, 1)
+        self.grid.attach(theme_label, 0, 1, 1, 1)
+        self.grid.attach(theme_box, 1, 1, 1, 1)
+        self.grid.attach(dir_label, 0, 2, 1, 1)
+        self.grid.attach(self.dir_combo, 1, 2, 1, 1)
+
+        # Add a separator
+        separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        box.pack_start(separator, False, False, 10)
+
+        # Add a switch for enabling/disabling notifications
+        notifications_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        notifications_label = Gtk.Label("Enable notifications:")
+        notifications_label.set_halign(Gtk.Align.START)
+        self.notifications_switch = Gtk.Switch()
+        self.notifications_switch.set_active(current_settings["notifications_enabled"])
+        notifications_box.pack_start(notifications_label, False, False, 0)
+        notifications_box.pack_end(self.notifications_switch, False, False, 0)
+        box.pack_start(notifications_box, False, False, 0)
 
         self.show_all()
+        self.on_dir_combo_changed(self.dir_combo)
+        self.update_theme_icon()
+
+    def on_dir_combo_changed(self, combo):
+        show_custom = combo.get_active_text() == "Choose directory"
+        if show_custom:
+            if self.custom_dir_button not in self.grid.get_children():
+                self.grid.attach(self.custom_dir_button, 1, 3, 1, 1)
+                self.grid.attach(self.custom_dir_label, 1, 4, 1, 1)
+                self.grid.show_all()
+        else:
+            if self.custom_dir_button in self.grid.get_children():
+                self.grid.remove(self.custom_dir_button)
+                self.grid.remove(self.custom_dir_label)
+
+                self.resize(1, 1)
+
+        self.grid.show_all()
+
+    def on_custom_dir_clicked(self, button):
+        dialog = Gtk.FileChooserDialog(
+            title="Select Custom Output Directory",
+            parent=self,
+            action=Gtk.FileChooserAction.SELECT_FOLDER,
+        )
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK
+        )
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            folder_path = dialog.get_filename()
+            self.custom_dir_label.set_text(folder_path)
+            self.custom_dir_label.set_tooltip_text(folder_path)
+        dialog.destroy()
+
+    def on_theme_changed(self, combo):
+        self.update_theme_icon()
+
+    def update_theme_icon(self):
+        selected_theme = self.theme_combo.get_active_text()
+        gtk_theme = self.get_current_gtk_theme()
+
+        if selected_theme == "Light":
+            self.theme_icon.set_visible(True)
+            tooltip_text = f"Current GTK theme: {gtk_theme}\n\n"
+            tooltip_text += "Note: If you're unable to get a light theme, it may be due to your system's GTK theme settings."
+            self.theme_icon.set_tooltip_text(tooltip_text)
+        else:
+            self.theme_icon.set_visible(False)
+
+    def get_current_gtk_theme(self):
+        settings = Gtk.Settings.get_default()
+        return settings.get_property("gtk-theme-name")
 
 
 def main():
