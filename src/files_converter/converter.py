@@ -42,18 +42,24 @@ class FileConverter:
 
         if file_type == "photos":
             self._convert_photo(input_path, output_path, target_format)
+            self.progress_callback(1.0)
         elif file_type == "videos":
             self._convert_video(input_path, output_path, target_format)
         elif file_type == "vectors":
             self._convert_vector(input_path, output_path, target_format)
+            self.progress_callback(1.0)
         elif file_type == "audio":
             self._convert_audio(input_path, output_path, target_format)
+            self.progress_callback(1.0)
         elif file_type == "documents":
             self._convert_document(input_path, output_path, target_format)
+            self.progress_callback(1.0)
         elif file_type == "archives":
             self._convert_archive(input_path, output_path, target_format)
+            self.progress_callback(1.0)
         elif file_type == "ebooks":
             self._convert_ebook(input_path, output_path, target_format)
+            self.progress_callback(1.0)
         else:
             raise ValueError(f"Unsupported file type: {file_type}")
 
@@ -72,15 +78,24 @@ class FileConverter:
 
             # Set up the conversion
             stream = ffmpeg.input(input_path)
-            stream = ffmpeg.output(stream, output_path, format=target_format)
+            stream = ffmpeg.output(stream, output_path, format=target_format).overwrite_output()
 
-            # Run the conversion
-            process = ffmpeg.run_async(stream, pipe_stderr=True)
+            # Construct the ffmpeg command
+            ffmpeg_cmd = ffmpeg.compile(stream)
+
+            # Run the conversion with subprocess
+            process = subprocess.Popen(
+                ffmpeg_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                bufsize=1,
+                universal_newlines=True,
+            )
 
             # Monitor the conversion progress
             pattern = re.compile(r"time=(\d{2}):(\d{2}):(\d{2})\.\d{2}")
             while True:
-                line = process.stderr.readline().decode("utf8")
+                line = process.stdout.readline()
                 if not line:
                     break
                 match = pattern.search(line)

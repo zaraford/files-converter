@@ -1,9 +1,8 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, Pango, GLib, Gio
+from gi.repository import Gtk, Gdk, Pango, GLib, Gio, GdkPixbuf
 import gettext
-import itertools
 import multiprocessing
 import json
 import os
@@ -13,7 +12,6 @@ import threading
 import time
 from datetime import datetime, timedelta
 from functools import partial
-import magic
 import mimetypes
 
 # Add the parent directory to the Python path
@@ -179,6 +177,7 @@ class ConversionWindow(Gtk.Window):
         self.clear_all_button = None
         self.added_files = set()
         self.settings = self.load_settings()
+        self.autoremove_converted = self.settings.get("autoremove_converted", False)
         self.apply_settings()
         self.build_ui()
 
@@ -190,40 +189,40 @@ class ConversionWindow(Gtk.Window):
 
         # File menu
         filemenu = Gtk.Menu()
-        filem = Gtk.MenuItem("File")
+        filem = Gtk.MenuItem(label="File")
         filem.set_submenu(filemenu)
 
-        add_files = Gtk.MenuItem("Add files")
+        add_files = Gtk.MenuItem(label="Add files")
         add_files.connect("activate", self.on_select_files_clicked)
         filemenu.append(add_files)
 
-        open_folder = Gtk.MenuItem("Open folder")
+        open_folder = Gtk.MenuItem(label="Open folder")
         open_folder.connect("activate", self.on_open_folder_clicked)
         filemenu.append(open_folder)
 
         # Settings menu
         settingsmenu = Gtk.Menu()
-        settingsm = Gtk.MenuItem("Settings")
+        settingsm = Gtk.MenuItem(label="Settings")
         settingsm.set_submenu(settingsmenu)
 
-        settings_item = Gtk.MenuItem("Preferences")
+        settings_item = Gtk.MenuItem(label="Preferences")
         settings_item.connect("activate", self.open_settings)
         settingsmenu.append(settings_item)
 
         # Help menu
         helpmenu = Gtk.Menu()
-        helpm = Gtk.MenuItem("Help")
+        helpm = Gtk.MenuItem(label="Help")
         helpm.set_submenu(helpmenu)
 
-        about_item = Gtk.MenuItem("About")
+        about_item = Gtk.MenuItem(label="About")
         about_item.connect("activate", self.show_about_dialog)
         helpmenu.append(about_item)
 
-        report_bug = Gtk.MenuItem("Report a bug")
+        report_bug = Gtk.MenuItem(label="Report a bug")
         report_bug.connect("activate", self.report_bug)
         helpmenu.append(report_bug)
 
-        donate = Gtk.MenuItem("Support")
+        donate = Gtk.MenuItem(label="Support")
         donate.connect("activate", self.donate)
         helpmenu.append(donate)
 
@@ -331,7 +330,8 @@ class ConversionWindow(Gtk.Window):
         if response == Gtk.ResponseType.OK:
             file_paths = dialog.get_filenames()
             for file_path in file_paths:
-                self.add_file(file_path)
+                if self.is_supported_file(file_path, self.get_supported_extensions()):
+                    self.add_file(file_path)
 
         dialog.destroy()
 
@@ -366,6 +366,7 @@ class ConversionWindow(Gtk.Window):
 
     def convert_files(self, files, output_dir):
         total_files = len(files)
+        successfully_converted = []
         for i, list_box_row in enumerate(files):
             file_card = list_box_row
             if isinstance(file_card, FileCard):
@@ -387,7 +388,6 @@ class ConversionWindow(Gtk.Window):
                 )
 
                 try:
-
                     def progress_callback(progress):
                         file_progress = (i + progress) / total_files
                         GLib.idle_add(self.set_progress, file_progress)
@@ -395,6 +395,7 @@ class ConversionWindow(Gtk.Window):
                     self.converter.convert_file(
                         input_path, output_path, target_format, progress_callback
                     )
+                    successfully_converted.append(file_card)
                 except Exception as e:
                     GLib.idle_add(
                         self.show_error_dialog,
@@ -403,6 +404,9 @@ class ConversionWindow(Gtk.Window):
 
             else:
                 print(f"Unexpected item in file list: {type(file_card)}")
+
+        if self.autoremove_converted:
+            GLib.idle_add(self.remove_converted_files, successfully_converted)
 
         GLib.idle_add(self.conversion_completed)
 
@@ -548,7 +552,8 @@ class ConversionWindow(Gtk.Window):
             self.settings["output_directory"] = dialog.dir_combo.get_active_text()
             self.settings["custom_directory"] = dialog.custom_dir_label.get_text()
             self.settings["notifications_enabled"] = dialog.notifications_switch.get_active()
-
+            self.settings["autoremove_converted"] = dialog.autoremove_switch.get_active()
+            
             # Save and apply the new settings
             self.save_settings()
             self.apply_settings()
@@ -567,6 +572,14 @@ class ConversionWindow(Gtk.Window):
         about_dialog.set_website("https://github.com/zaraford/files-converter")
         about_dialog.set_website_label("GitHub Repository")
         about_dialog.set_license_type(Gtk.License.MIT_X11)
+
+        # Add the logo
+        icon_path = "/usr/share/icons/hicolor/96x96/apps/files-converter.png"
+        if os.path.exists(icon_path):
+            logo = GdkPixbuf.Pixbuf.new_from_file(icon_path)
+            about_dialog.set_logo(logo)
+        else:
+            print(f"Warning: Icon file not found at {icon_path}")
 
         about_dialog.run()
         about_dialog.destroy()
@@ -627,6 +640,9 @@ class ConversionWindow(Gtk.Window):
 
         # Apply notifications setting
         self.notifications_enabled = self.settings["notifications_enabled"]
+        
+        # Apply autoremove setting
+        self.autoremove_converted = self.settings.get("autoremove_converted", False)
 
         # Update UI elements if necessary
         self.update_ui_for_settings()
@@ -673,10 +689,6 @@ class ConversionWindow(Gtk.Window):
             self.set_theme(current_system_theme)
         else:
             self.set_theme(self.settings["theme"])
-
-        # Update any UI elements related to notifications if necessary
-        # For example, if there's a notifications indicator:
-        # self.notifications_indicator.set_visible(self.notifications_enabled)
 
     def add_file_or_folder(self, path):
         if os.path.isfile(path):
@@ -793,6 +805,12 @@ class ConversionWindow(Gtk.Window):
         if hasattr(self, "progress_dialog"):
             self.progress_dialog.destroy()
             del self.progress_dialog
+            
+    def remove_converted_files(self, files_to_remove):
+        for file_card in files_to_remove:
+            self.file_list.remove(file_card)
+            self.added_files.remove(file_card.get_file_path())
+        self.update_clear_all_button()
 
 
 class SettingsDialog(Gtk.Dialog):
@@ -818,7 +836,7 @@ class SettingsDialog(Gtk.Dialog):
         box.pack_start(self.grid, True, True, 0)
 
         # Language setting
-        lang_label = Gtk.Label("Language:")
+        lang_label = Gtk.Label(label="Language:")
         lang_label.set_halign(Gtk.Align.START)
         self.lang_combo = Gtk.ComboBoxText()
         self.lang_combo.set_hexpand(True)
@@ -827,7 +845,7 @@ class SettingsDialog(Gtk.Dialog):
         self.lang_combo.set_active(0 if current_settings["language"] == "English" else 1)
 
         # Theme setting
-        theme_label = Gtk.Label("Theme:")
+        theme_label = Gtk.Label(label="Theme:")
         theme_label.set_halign(Gtk.Align.START)
         self.theme_combo = Gtk.ComboBoxText()
         self.theme_combo.set_hexpand(True)
@@ -847,7 +865,7 @@ class SettingsDialog(Gtk.Dialog):
         theme_box.pack_start(self.theme_icon, False, False, 0)
 
         # Output directory setting
-        dir_label = Gtk.Label("Default output directory:")
+        dir_label = Gtk.Label(label="Default output directory:")
         dir_label.set_halign(Gtk.Align.START)
         self.dir_combo = Gtk.ComboBoxText()
         self.dir_combo.set_hexpand(True)
@@ -858,9 +876,9 @@ class SettingsDialog(Gtk.Dialog):
         self.dir_combo.connect("changed", self.on_dir_combo_changed)
 
         # Custom directory options
-        self.custom_dir_button = Gtk.Button("Choose custom directory")
+        self.custom_dir_button = Gtk.Button(label="Choose custom directory")
         self.custom_dir_button.connect("clicked", self.on_custom_dir_clicked)
-        self.custom_dir_label = Gtk.Label(current_settings["custom_directory"])
+        self.custom_dir_label = Gtk.Label(label=current_settings["custom_directory"])
         self.custom_dir_label.set_halign(Gtk.Align.START)
         self.custom_dir_label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         self.custom_dir_label.set_max_width_chars(30)
@@ -879,13 +897,25 @@ class SettingsDialog(Gtk.Dialog):
 
         # Add a switch for enabling/disabling notifications
         notifications_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
-        notifications_label = Gtk.Label("Enable notifications:")
+        notifications_label = Gtk.Label(label="Enable notifications:")
         notifications_label.set_halign(Gtk.Align.START)
         self.notifications_switch = Gtk.Switch()
         self.notifications_switch.set_active(current_settings["notifications_enabled"])
         notifications_box.pack_start(notifications_label, False, False, 0)
         notifications_box.pack_end(self.notifications_switch, False, False, 0)
         box.pack_start(notifications_box, False, False, 0)
+
+        # Add a switch for auto-removing converted files
+        autoremove_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        autoremove_label = Gtk.Label(label="Auto-remove converted files:")
+        autoremove_label.set_halign(Gtk.Align.START)
+        self.autoremove_switch = Gtk.Switch()
+        self.autoremove_switch.set_active(current_settings.get("autoremove_converted", False))
+        autoremove_box.pack_start(autoremove_label, False, False, 0)
+        autoremove_box.pack_end(self.autoremove_switch, False, False, 0)
+        box.pack_start(autoremove_box, False, False, 0)
+
+        # ... (rest of the existing code) ...
 
         self.show_all()
         self.on_dir_combo_changed(self.dir_combo)
@@ -897,7 +927,6 @@ class SettingsDialog(Gtk.Dialog):
             if self.custom_dir_button not in self.grid.get_children():
                 self.grid.attach(self.custom_dir_button, 1, 3, 1, 1)
                 self.grid.attach(self.custom_dir_label, 1, 4, 1, 1)
-                self.grid.show_all()
         else:
             if self.custom_dir_button in self.grid.get_children():
                 self.grid.remove(self.custom_dir_button)
@@ -906,6 +935,7 @@ class SettingsDialog(Gtk.Dialog):
                 self.resize(1, 1)
 
         self.grid.show_all()
+        self.update_theme_icon()
 
     def on_custom_dir_clicked(self, button):
         dialog = Gtk.FileChooserDialog(
