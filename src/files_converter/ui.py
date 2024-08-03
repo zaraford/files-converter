@@ -176,6 +176,17 @@ class ConversionWindow(Gtk.Window):
         self.scan_start_time = None
         self.clear_all_button = None
         self.added_files = set()
+        self.conversion_weights = {
+            "photos": 1,
+            "videos": 5,
+            "vectors": 2,
+            "audio": 1.5,
+            "documents": 1,
+            "archives": 3,
+            "ebooks": 1.2,
+        }
+        self.total_weighted_size = 0
+        self.converted_weighted_size = 0
         self.settings = self.load_settings()
         self.autoremove_converted = self.settings.get("autoremove_converted", False)
         self.apply_settings()
@@ -365,9 +376,11 @@ class ConversionWindow(Gtk.Window):
         GLib.timeout_add(1000, self.update_progress_bar)
 
     def convert_files(self, files, output_dir):
-        total_files = len(files)
+        self.total_weighted_size = self.calculate_total_weighted_size(files)
+        self.converted_weighted_size = 0
         successfully_converted = []
-        for i, list_box_row in enumerate(files):
+
+        for list_box_row in files:
             file_card = list_box_row
             if isinstance(file_card, FileCard):
                 input_path = file_card.get_file_path()
@@ -388,14 +401,38 @@ class ConversionWindow(Gtk.Window):
                 )
 
                 try:
+                    file_type = self.converter.get_file_type(input_path)
+                    file_size = os.path.getsize(input_path)
+                    file_weight = self.conversion_weights.get(file_type, 1)
+                    weighted_size = file_size * file_weight
+
+                    file_progress = 0  # Track progress for this specific file
+
                     def progress_callback(progress):
-                        file_progress = (i + progress) / total_files
-                        GLib.idle_add(self.set_progress, file_progress)
+                        nonlocal file_progress
+                        new_file_progress = progress * weighted_size
+                        progress_diff = new_file_progress - file_progress
+                        file_progress = new_file_progress
+                        self.converted_weighted_size += progress_diff
+                        overall_progress = min(
+                            self.converted_weighted_size / self.total_weighted_size, 1.0
+                        )
+                        GLib.idle_add(self.set_progress, overall_progress)
 
                     self.converter.convert_file(
                         input_path, output_path, target_format, progress_callback
                     )
                     successfully_converted.append(file_card)
+
+                    # Ensure we've accounted for the full file size after conversion
+                    if file_progress < weighted_size:
+                        remaining_progress = weighted_size - file_progress
+                        self.converted_weighted_size += remaining_progress
+                        overall_progress = min(
+                            self.converted_weighted_size / self.total_weighted_size, 1.0
+                        )
+                        GLib.idle_add(self.set_progress, overall_progress)
+
                 except Exception as e:
                     GLib.idle_add(
                         self.show_error_dialog,
@@ -410,14 +447,25 @@ class ConversionWindow(Gtk.Window):
 
         GLib.idle_add(self.conversion_completed)
 
+    def calculate_total_weighted_size(self, files):
+        total = 0
+        for list_box_row in files:
+            if isinstance(list_box_row, FileCard):
+                file_path = list_box_row.get_file_path()
+                file_type = self.converter.get_file_type(file_path)
+                file_size = os.path.getsize(file_path)
+                weight = self.conversion_weights.get(file_type, 1)
+                total += file_size * weight
+        return total
+
     def set_progress(self, progress):
         self.current_progress = progress
+        self.progress_bar.set_fraction(progress)
+        self.update_progress_bar()
 
     def update_progress_bar(self):
         if not self.conversion_active:
             return False
-
-        self.progress_bar.set_fraction(self.current_progress)
 
         elapsed_time = time.time() - self.start_time
         if self.current_progress > 0:
@@ -553,7 +601,7 @@ class ConversionWindow(Gtk.Window):
             self.settings["custom_directory"] = dialog.custom_dir_label.get_text()
             self.settings["notifications_enabled"] = dialog.notifications_switch.get_active()
             self.settings["autoremove_converted"] = dialog.autoremove_switch.get_active()
-            
+
             # Save and apply the new settings
             self.save_settings()
             self.apply_settings()
@@ -640,7 +688,7 @@ class ConversionWindow(Gtk.Window):
 
         # Apply notifications setting
         self.notifications_enabled = self.settings["notifications_enabled"]
-        
+
         # Apply autoremove setting
         self.autoremove_converted = self.settings.get("autoremove_converted", False)
 
@@ -805,7 +853,7 @@ class ConversionWindow(Gtk.Window):
         if hasattr(self, "progress_dialog"):
             self.progress_dialog.destroy()
             del self.progress_dialog
-            
+
     def remove_converted_files(self, files_to_remove):
         for file_card in files_to_remove:
             self.file_list.remove(file_card)
