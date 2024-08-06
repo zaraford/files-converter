@@ -355,12 +355,20 @@ class ConversionWindow(Gtk.Window):
             self.show_error_dialog(_("No files selected for conversion."))
             return
 
-        if self.default_output_dir == _("Ask each time"):
+        if self.default_output_dir == "ask":
             output_dir = self.choose_output_directory()
             if not output_dir:
                 return
-        elif self.default_output_dir == _("Choose directory"):
-            output_dir = self.custom_output_dir
+        elif self.default_output_dir == "custom":
+            if self.custom_output_dir:
+                output_dir = self.custom_output_dir
+            else:
+                self.show_error_dialog(
+                    _(
+                        "No custom directory has been selected for conversion. Please select a directory to proceed."
+                    )
+                )
+                return
         else:  # "Same as input"
             output_dir = None  # Will be set per file in the conversion process
 
@@ -639,22 +647,7 @@ class ConversionWindow(Gtk.Window):
 
     def open_settings(self, widget):
         dialog = SettingsDialog(self, self.settings)
-        dialog.connect("language-changed", self.on_language_changed)
-        response = dialog.run()
-
-        if response == Gtk.ResponseType.OK:
-            # Update settings
-            self.settings["language"] = dialog.lang_combo.get_active_id()
-            self.settings["theme"] = dialog.theme_combo.get_active_text()
-            self.settings["output_directory"] = dialog.dir_combo.get_active_text()
-            self.settings["custom_directory"] = dialog.custom_dir_label.get_text()
-            self.settings["notifications_enabled"] = dialog.notifications_switch.get_active()
-            self.settings["autoremove_converted"] = dialog.autoremove_switch.get_active()
-
-            # Save and apply the new settings
-            self.save_settings()
-            self.apply_settings()
-
+        dialog.run()
         dialog.destroy()
 
     def save_settings(self):
@@ -671,8 +664,8 @@ class ConversionWindow(Gtk.Window):
         self.load_translations(lang_code)
         default_settings = {
             "language": lang_code,
-            "theme": _("System default"),
-            "output_directory": _("Same as input"),
+            "theme": "system",
+            "output_directory": "same",
             "custom_directory": "",
             "notifications_enabled": True,
             "autoremove_converted": False,
@@ -704,7 +697,7 @@ class ConversionWindow(Gtk.Window):
 
         # Apply output directory setting
         self.default_output_dir = self.settings["output_directory"]
-        if self.default_output_dir == _("Choose directory"):
+        if self.default_output_dir == "custom":
             self.custom_output_dir = self.settings["custom_directory"]
         else:
             self.custom_output_dir = None
@@ -725,10 +718,6 @@ class ConversionWindow(Gtk.Window):
             _ = lang.gettext
         except FileNotFoundError:
             print(f"No translation found for {lang_code}.")
-
-    def on_language_changed(self, dialog, lang_code):
-        self.load_translations(lang_code)
-        self.update_interface_text()
 
     def update_interface_text(self):
         # Update menu items
@@ -760,12 +749,12 @@ class ConversionWindow(Gtk.Window):
 
     def set_theme(self, theme):
         settings = Gtk.Settings.get_default()
-        if theme == _("System default"):
+        if theme == "system":
             # Reset to system default
             settings.reset_property("gtk-application-prefer-dark-theme")
-        elif theme == _("Light"):
+        elif theme == "light":
             settings.set_property("gtk-application-prefer-dark-theme", False)
-        elif theme == _("Dark"):
+        elif theme == "dark":
             settings.set_property("gtk-application-prefer-dark-theme", True)
 
         # Force theme update
@@ -901,15 +890,11 @@ class SettingsDialog(Gtk.Dialog):
 
     def __init__(self, parent, current_settings):
         super().__init__(title=_("Preferences"), transient_for=parent, flags=0)
-        self.add_buttons(
-            Gtk.STOCK_OK,
-            Gtk.ResponseType.OK,
-            Gtk.STOCK_CANCEL,
-            Gtk.ResponseType.CANCEL,
-        )
-
         self.set_default_size(400, 250)
         self.set_border_width(10)
+
+        self.parent = parent
+        self.current_settings = current_settings
 
         box = self.get_content_area()
         box.set_spacing(10)
@@ -938,18 +923,18 @@ class SettingsDialog(Gtk.Dialog):
         for lang_code, lang_name in languages:
             self.lang_combo.append(lang_code, lang_name)
         self.lang_combo.set_active_id(current_settings["language"])
-        self.lang_combo.connect("changed", self.on_language_changed)
+        self.lang_combo.connect("changed", self.on_setting_changed)
 
         # Theme setting
         self.theme_label = Gtk.Label(label=_("Theme:"))
         self.theme_label.set_halign(Gtk.Align.START)
         self.theme_combo = Gtk.ComboBoxText()
         self.theme_combo.set_hexpand(True)
-        themes = [_("System default"), _("Light"), _("Dark")]
-        for theme in themes:
-            self.theme_combo.append_text(theme)
-        self.theme_combo.set_active(themes.index(current_settings["theme"]))
-        self.theme_combo.connect("changed", self.on_theme_changed)
+        themes = [("system", _("System default")), ("light", _("Light")), ("dark", _("Dark"))]
+        for theme_id, theme_name in themes:
+            self.theme_combo.append(theme_id, theme_name)
+        self.theme_combo.set_active_id(current_settings["theme"])
+        self.theme_combo.connect("changed", self.on_setting_changed)
 
         # Create a box for the theme combo and icon
         theme_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
@@ -965,16 +950,21 @@ class SettingsDialog(Gtk.Dialog):
         self.dir_label.set_halign(Gtk.Align.START)
         self.dir_combo = Gtk.ComboBoxText()
         self.dir_combo.set_hexpand(True)
-        dir_options = [_("Same as input"), _("Choose directory"), _("Ask each time")]
-        for option in dir_options:
-            self.dir_combo.append_text(option)
-        self.dir_combo.set_active(dir_options.index(current_settings["output_directory"]))
+        dir_options = [
+            ("same", _("Same as input")),
+            ("custom", _("Choose directory")),
+            ("ask", _("Ask each time")),
+        ]
+        for dir_id, dir_name in dir_options:
+            self.dir_combo.append(dir_id, dir_name)
+        self.dir_combo.set_active_id(current_settings["output_directory"])
         self.dir_combo.connect("changed", self.on_dir_combo_changed)
 
         # Custom directory options
         self.custom_dir_button = Gtk.Button(label=_("Choose custom directory"))
         self.custom_dir_button.connect("clicked", self.on_custom_dir_clicked)
-        self.custom_dir_label = Gtk.Label(label=current_settings["custom_directory"])
+        self.custom_dir = current_settings["custom_directory"]
+        self.custom_dir_label = Gtk.Label(label=self.custom_dir or _("Not selected"))
         self.custom_dir_label.set_halign(Gtk.Align.START)
         self.custom_dir_label.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
         self.custom_dir_label.set_max_width_chars(30)
@@ -997,6 +987,7 @@ class SettingsDialog(Gtk.Dialog):
         self.notifications_label.set_halign(Gtk.Align.START)
         self.notifications_switch = Gtk.Switch()
         self.notifications_switch.set_active(current_settings["notifications_enabled"])
+        self.notifications_switch.connect("notify::active", self.on_setting_changed)
         notifications_box.pack_start(self.notifications_label, False, False, 0)
         notifications_box.pack_end(self.notifications_switch, False, False, 0)
         box.pack_start(notifications_box, False, False, 0)
@@ -1007,6 +998,7 @@ class SettingsDialog(Gtk.Dialog):
         self.autoremove_label.set_halign(Gtk.Align.START)
         self.autoremove_switch = Gtk.Switch()
         self.autoremove_switch.set_active(current_settings["autoremove_converted"])
+        self.autoremove_switch.connect("notify::active", self.on_setting_changed)
         autoremove_box.pack_start(self.autoremove_label, False, False, 0)
         autoremove_box.pack_end(self.autoremove_switch, False, False, 0)
         box.pack_start(autoremove_box, False, False, 0)
@@ -1016,7 +1008,7 @@ class SettingsDialog(Gtk.Dialog):
         self.update_theme_icon()
 
     def on_dir_combo_changed(self, combo):
-        show_custom = combo.get_active_text() == _("Choose directory")
+        show_custom = combo.get_active_id() == "custom"
         if show_custom:
             if self.custom_dir_button not in self.grid.get_children():
                 self.grid.attach(self.custom_dir_button, 1, 3, 1, 1)
@@ -1030,6 +1022,7 @@ class SettingsDialog(Gtk.Dialog):
 
         self.grid.show_all()
         self.update_theme_icon()
+        self.on_setting_changed(combo)
 
     def on_custom_dir_clicked(self, button):
         dialog = Gtk.FileChooserDialog(
@@ -1043,18 +1036,30 @@ class SettingsDialog(Gtk.Dialog):
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             folder_path = dialog.get_filename()
+            self.custom_dir = folder_path
             self.custom_dir_label.set_text(folder_path)
             self.custom_dir_label.set_tooltip_text(folder_path)
+            self.on_setting_changed(button)
         dialog.destroy()
 
-    def on_theme_changed(self, combo):
-        self.update_theme_icon()
+    def on_setting_changed(self, widget, switch_gparam=None):
+        # Update settings
+        self.current_settings["language"] = self.lang_combo.get_active_id()
+        self.current_settings["theme"] = self.theme_combo.get_active_id()
+        self.current_settings["output_directory"] = self.dir_combo.get_active_id()
+        self.current_settings["custom_directory"] = self.custom_dir
+        self.current_settings["notifications_enabled"] = self.notifications_switch.get_active()
+        self.current_settings["autoremove_converted"] = self.autoremove_switch.get_active()
 
-    def on_language_changed(self, combo):
-        lang_code = combo.get_active_id()
-        self.emit("language-changed", lang_code)
-        self.update_texts()
-        self.resize(1, 1)
+        # Save and apply the new settings
+        self.parent.save_settings()
+        self.parent.apply_settings()
+
+        if widget == self.lang_combo:
+            self.update_texts()
+            self.resize(1, 1)
+        elif widget == self.theme_combo:
+            self.update_theme_icon()
 
     def update_texts(self):
         # Update dialog title
@@ -1069,10 +1074,21 @@ class SettingsDialog(Gtk.Dialog):
         self.autoremove_label.set_text(_("Auto-remove converted files:"))
 
         # Update combo box items
-        self.update_combobox_texts(self.theme_combo, [_("System default"), _("Light"), _("Dark")])
         self.update_combobox_texts(
-            self.dir_combo, [_("Same as input"), _("Choose directory"), _("Ask each time")]
+            self.theme_combo,
+            [("system", _("System default")), ("light", _("Light")), ("dark", _("Dark"))],
         )
+        self.update_combobox_texts(
+            self.dir_combo,
+            [
+                ("same", _("Same as input")),
+                ("custom", _("Choose directory")),
+                ("ask", _("Ask each time")),
+            ],
+        )
+
+        # Update custom directory label if not selected
+        self.custom_dir_label.set_text(_("Not selected"))
 
         # Update tooltip
         if self.theme_icon.get_visible():
@@ -1084,17 +1100,17 @@ class SettingsDialog(Gtk.Dialog):
             self.theme_icon.set_tooltip_text(tooltip_text)
 
     def update_combobox_texts(self, combobox, new_texts):
-        model = combobox.get_model()
-        active_index = combobox.get_active()
-        for i, text in enumerate(new_texts):
-            model[i][0] = text
-        combobox.set_active(active_index)
+        active_id = combobox.get_active_id()
+        combobox.remove_all()
+        for id, text in new_texts:
+            combobox.append(id, text)
+        combobox.set_active_id(active_id)
 
     def update_theme_icon(self):
-        selected_theme = self.theme_combo.get_active_text()
+        selected_theme = self.theme_combo.get_active_id()
         gtk_theme = self.get_current_gtk_theme()
 
-        if selected_theme == _("Light"):
+        if selected_theme == "light":
             self.theme_icon.set_visible(True)
             tooltip_text = _("Current GTK theme: {gtk_theme}\n\n").format(gtk_theme=gtk_theme)
             tooltip_text += _(
