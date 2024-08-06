@@ -1,209 +1,210 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# Czech translations for PACKAGE package.
+# Copyright (C) 2024 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# zaraford <vlad.lodgyk@gmail.com>, 2024.
 #
-#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-08-05 19:45+0300\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2024-08-05 19:50+0300\n"
+"Last-Translator: Vladyslav Lodzhuk <vlad.lodgyk@gmail.com>\n"
+"Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
+"Language: cs\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+"X-Generator: Poedit 3.4.3\n"
 
 #: src/files_converter/ui.py:78 src/files_converter/ui.py:166
 msgid "Convert to:"
-msgstr ""
+msgstr "Převést na:"
 
 #: src/files_converter/ui.py:136
 #, python-brace-format
 msgid "Type: {mime_type}\n"
-msgstr ""
+msgstr "Typ: {mime_type}\n"
 
 #: src/files_converter/ui.py:137
 #, python-brace-format
 msgid "Size: {size}\n"
-msgstr ""
+msgstr "Velikost: {size}\n"
 
 #: src/files_converter/ui.py:138
 #, python-brace-format
 msgid "Created: {created}\n"
-msgstr ""
+msgstr "Vytvořeno: {created}\n"
 
 #: src/files_converter/ui.py:142
 msgid "Error retrieving metadata: {}"
-msgstr ""
+msgstr "Chyba při získávání metadat: {}"
 
 #: src/files_converter/ui.py:206 src/files_converter/ui.py:735
 msgid "File"
-msgstr ""
+msgstr "Soubor"
 
 #: src/files_converter/ui.py:209 src/files_converter/ui.py:738
 msgid "Add files"
-msgstr ""
+msgstr "Přidat soubory"
 
 #: src/files_converter/ui.py:213 src/files_converter/ui.py:739
 msgid "Open folder"
-msgstr ""
+msgstr "Otevřít složku"
 
 #: src/files_converter/ui.py:219 src/files_converter/ui.py:736
 msgid "Settings"
-msgstr ""
+msgstr "Nastavení"
 
 #: src/files_converter/ui.py:222 src/files_converter/ui.py:740
 #: src/files_converter/ui.py:903 src/files_converter/ui.py:1061
 msgid "Preferences"
-msgstr ""
+msgstr "Předvolby"
 
 #: src/files_converter/ui.py:228 src/files_converter/ui.py:737
 msgid "Help"
-msgstr ""
+msgstr "Nápověda"
 
 #: src/files_converter/ui.py:231 src/files_converter/ui.py:741
 msgid "About"
-msgstr ""
+msgstr "O aplikaci"
 
 #: src/files_converter/ui.py:235 src/files_converter/ui.py:742
 msgid "Report a bug"
-msgstr ""
+msgstr "Nahlásit chybu"
 
 #: src/files_converter/ui.py:239 src/files_converter/ui.py:743
 msgid "Support"
-msgstr ""
+msgstr "Podpora"
 
 #: src/files_converter/ui.py:250 src/files_converter/ui.py:746
 msgid "Selected files:"
-msgstr ""
+msgstr "Vybrané soubory:"
 
 #: src/files_converter/ui.py:275 src/files_converter/ui.py:750
 msgid "Clear All"
-msgstr ""
+msgstr "Vymazat vše"
 
 #: src/files_converter/ui.py:315 src/files_converter/ui.py:753
 msgid "Convert"
-msgstr ""
+msgstr "Převést"
 
 #: src/files_converter/ui.py:321 src/files_converter/ui.py:754
 msgid "Cancel"
-msgstr ""
+msgstr "Zrušit"
 
 #: src/files_converter/ui.py:336
 msgid "Please choose files"
-msgstr ""
+msgstr "Prosím, vyberte soubory"
 
 #: src/files_converter/ui.py:355
 msgid "No files selected for conversion."
-msgstr ""
+msgstr "Žádné soubory k převodu nebyly vybrány."
 
 #: src/files_converter/ui.py:358 src/files_converter/ui.py:968
 #: src/files_converter/ui.py:1074
 msgid "Ask each time"
-msgstr ""
+msgstr "Ptát se vždy"
 
 #: src/files_converter/ui.py:362 src/files_converter/ui.py:707
 #: src/files_converter/ui.py:968 src/files_converter/ui.py:1019
 #: src/files_converter/ui.py:1074
 msgid "Choose directory"
-msgstr ""
+msgstr "Vybrat složku"
 
 #: src/files_converter/ui.py:394
 msgid "No valid target format available for {}"
-msgstr ""
+msgstr "Pro {} není k dispozici žádný platný cílový formát"
 
 #: src/files_converter/ui.py:444
 msgid "Error converting {}: {}"
-msgstr ""
+msgstr "Chyba při převodu {}: {}"
 
 #: src/files_converter/ui.py:448
 msgid "Unexpected item in file list: {}"
-msgstr ""
+msgstr "Neočekávaná položka v seznamu souborů: {}"
 
 #: src/files_converter/ui.py:480
 msgid "(Est. {} remaining)"
-msgstr ""
+msgstr "(odhadováno {} zbývá)"
 
 #: src/files_converter/ui.py:494
 msgid "Conversion completed"
-msgstr ""
+msgstr "Převod dokončen"
 
 #: src/files_converter/ui.py:495
 msgid "Conversion completed successfully!"
-msgstr ""
+msgstr "Převod byl úspěšně dokončen!"
 
 #: src/files_converter/ui.py:529
 msgid "Clear all files?"
-msgstr ""
+msgstr "Vymazat všechny soubory?"
 
 #: src/files_converter/ui.py:531
 msgid "Are you sure you want to remove all files from the list?"
-msgstr ""
+msgstr "Jste si jisti, že chcete odstranit všechny soubory ze seznamu?"
 
 #: src/files_converter/ui.py:545
 msgid "Select Output Directory"
-msgstr ""
+msgstr "Vybrat výstupní složku"
 
 #: src/files_converter/ui.py:566
 msgid "Error"
-msgstr ""
+msgstr "Chyba"
 
 #: src/files_converter/ui.py:579
 msgid "Information"
-msgstr ""
+msgstr "Informace"
 
 #: src/files_converter/ui.py:587
 msgid "Please choose a folder"
-msgstr ""
+msgstr "Prosím, vyberte složku"
 
 #: src/files_converter/ui.py:611
 msgid "A file conversion utility with context menu integration"
-msgstr ""
+msgstr "Nástroj pro převod souborů s integrací do kontextového menu"
 
 #: src/files_converter/ui.py:613
 msgid "GitHub Repository"
-msgstr ""
+msgstr "GitHub repozitář"
 
 #: src/files_converter/ui.py:622
 #, python-brace-format
 msgid "Warning: Icon file not found at {icon_path}"
-msgstr ""
+msgstr "Upozornění: Soubor ikony nebyl nalezen na {icon_path}"
 
 #: src/files_converter/ui.py:674 src/files_converter/ui.py:763
 #: src/files_converter/ui.py:948 src/files_converter/ui.py:1072
 msgid "System default"
-msgstr ""
+msgstr "Výchozí systémové nastavení"
 
 #: src/files_converter/ui.py:675 src/files_converter/ui.py:968
 #: src/files_converter/ui.py:1074
 msgid "Same as input"
-msgstr ""
+msgstr "Stejné jako vstup"
 
 #: src/files_converter/ui.py:688
 msgid "Error reading settings file. Using default settings."
-msgstr ""
+msgstr "Chyba při čtení konfiguračního souboru. Používám výchozí nastavení."
 
 #: src/files_converter/ui.py:766 src/files_converter/ui.py:948
 #: src/files_converter/ui.py:1072 src/files_converter/ui.py:1097
 msgid "Light"
-msgstr ""
+msgstr "Světlý"
 
 #: src/files_converter/ui.py:768 src/files_converter/ui.py:948
 #: src/files_converter/ui.py:1072
 msgid "Dark"
-msgstr ""
+msgstr "Tmavý"
 
 #: src/files_converter/ui.py:784
 msgid "Processing folder"
-msgstr ""
+msgstr "Zpracovávám složku"
 
 #: src/files_converter/ui.py:784
 msgid "Scanning for supported files..."
-msgstr ""
+msgstr "Skenuji podporované soubory..."
 
 #: src/files_converter/ui.py:848
 #, python-brace-format
@@ -211,46 +212,48 @@ msgid ""
 "Added {total_files} supported files.\n"
 "Scan completed in {formatted_time}."
 msgstr ""
+"Přidány podporované soubory {total_files}.\n"
+"Skenování dokončeno za {formatted_time}."
 
 #: src/files_converter/ui.py:852
 msgid "No supported files found in the selected folder."
-msgstr ""
+msgstr "V vybrané složce nebyly nalezeny žádné podporované soubory."
 
 #: src/files_converter/ui.py:862 src/files_converter/ui.py:865
 msgid "seconds"
-msgstr ""
+msgstr "sekund"
 
 #: src/files_converter/ui.py:865
 msgid "{} minutes and"
-msgstr ""
+msgstr "{} minut a"
 
 #: src/files_converter/ui.py:924 src/files_converter/ui.py:1064
 msgid "Language:"
-msgstr ""
+msgstr "Jazyk:"
 
 #: src/files_converter/ui.py:944 src/files_converter/ui.py:1065
 msgid "Theme:"
-msgstr ""
+msgstr "Téma:"
 
 #: src/files_converter/ui.py:964 src/files_converter/ui.py:1066
 msgid "Default output directory:"
-msgstr ""
+msgstr "Výchozí výstupní složka:"
 
 #: src/files_converter/ui.py:975 src/files_converter/ui.py:1067
 msgid "Choose custom directory"
-msgstr ""
+msgstr "Vybrat vlastní složku"
 
 #: src/files_converter/ui.py:996 src/files_converter/ui.py:1068
 msgid "Enable notifications:"
-msgstr ""
+msgstr "Povolit oznámení:"
 
 #: src/files_converter/ui.py:1006 src/files_converter/ui.py:1069
 msgid "Auto-remove converted files:"
-msgstr ""
+msgstr "Automaticky odstraňovat převedené soubory:"
 
 #: src/files_converter/ui.py:1036
 msgid "Select Custom Output Directory"
-msgstr ""
+msgstr "Vybrat vlastní výstupní složku"
 
 #: src/files_converter/ui.py:1080 src/files_converter/ui.py:1099
 #, python-brace-format
@@ -258,39 +261,66 @@ msgid ""
 "Current GTK theme: {gtk_theme}\n"
 "\n"
 msgstr ""
+"Akt téma GTK: {gtk_theme}\n"
+"\n"
 
 #: src/files_converter/ui.py:1082 src/files_converter/ui.py:1101
 msgid ""
 "Note: If you're unable to get a light theme, it may be due to your system's "
 "GTK theme settings."
 msgstr ""
+"Poznámka: Pokud se vám nedaří získat světlé téma, může to být kvůli "
+"nastavením GTK tématu ve vašem systému."
 
 #: src/files_converter/converter.py:61
 #, python-brace-format
 msgid "Unsupported file type: {file_type}"
-msgstr ""
+msgstr "Nepodporovaný typ souboru: {file_type}"
 
 #: src/files_converter/converter.py:110
 #, python-brace-format
 msgid "ffmpeg process failed with return code: {process.returncode}"
-msgstr ""
+msgstr "Proces ffmpeg selhal s návratovým kódem: {process.returncode}"
 
 #: src/files_converter/converter.py:125
 msgid "Inkscape is required for vector conversions but is not installed."
-msgstr ""
+msgstr "Inkscape je potřebný pro převod vektorů, ale není nainstalován."
 
 #: src/files_converter/converter.py:165
 msgid ""
 "Unsupported document conversion: {os.path.splitext(input_path)[1]} to "
 "{target_format}"
 msgstr ""
+"Nepodporovaný převod dokumentu: {os.path.splitext(input_path)[1]} na "
+"{target_format}"
 
 #: src/files_converter/converter.py:196
 #, python-brace-format
 msgid "Unsupported archive format: {target_format}"
-msgstr ""
+msgstr "Nepodporovaný formát archivu: {target_format}"
 
 #: src/files_converter/converter.py:206
 #, python-brace-format
 msgid "Failed to convert ebook from {input_path} to {output_path}"
-msgstr ""
+msgstr "Nepodařilo se převést ebook z {input_path} do {output_path}"
+
+#~ msgid "Error converting {os.path.basename(input_path)}: {str(e)}"
+#~ msgstr "Chyba při převodu {os.path.basename(input_path)}: {str(e)}"
+
+#~ msgid "{self.current_progress:.1%} (Est. {time_string} remaining)"
+#~ msgstr "{self.current_progress:.1%} (odhadováno {time_string} zbývá)"
+
+#~ msgid "{seconds:.2f} seconds"
+#~ msgstr "{seconds:.2f} sekund"
+
+#~ msgid "{int(minutes)} minutes and {seconds:.2f} seconds"
+#~ msgstr "{int(minutes)} minut a {seconds:.2f} sekund"
+
+#~ msgid "OK"
+#~ msgstr "OK"
+
+#~ msgid "Output Directory: {self.custom_output_dir}"
+#~ msgstr "Výstupní složka: {self.custom_output_dir}"
+
+#~ msgid "Output Directory: {self.default_output_dir}"
+#~ msgstr "Výstupní složka: {self.default_output_dir}"

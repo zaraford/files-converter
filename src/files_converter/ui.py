@@ -1,8 +1,9 @@
 import gi
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, Gdk, Pango, GLib, Gio, GdkPixbuf
+from gi.repository import Gtk, Gdk, Pango, GLib, GdkPixbuf, GObject
 import gettext
+import locale
 import multiprocessing
 import json
 import os
@@ -21,8 +22,6 @@ try:
     from files_converter.converter import FileConverter
 except ImportError:
     from converter import FileConverter
-
-_ = gettext.gettext  # _("Files Converter")
 
 
 class FileCard(Gtk.ListBoxRow):
@@ -76,9 +75,9 @@ class FileCard(Gtk.ListBoxRow):
         right_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         content_box.pack_end(right_box, False, False, 0)
 
-        to_label = Gtk.Label(label="Convert to:")
-        to_label.set_halign(Gtk.Align.END)
-        right_box.pack_start(to_label, False, False, 0)
+        self.to_label = Gtk.Label(label=_("Convert to:"))
+        self.to_label.set_halign(Gtk.Align.END)
+        right_box.pack_start(self.to_label, False, False, 0)
 
         file_type = self.converter.get_file_type(self.file_path)
         target_formats = self.converter.get_target_formats(file_type)
@@ -129,18 +128,18 @@ class FileCard(Gtk.ListBoxRow):
     def get_file_metadata(self):
         try:
             stat = os.stat(self.file_path)
-            mime_type, _ = mimetypes.guess_type(self.file_path)
+            mime_type, a = mimetypes.guess_type(self.file_path)
 
             size = self.format_size(stat.st_size)
             created = datetime.fromtimestamp(stat.st_ctime).strftime("%Y-%m-%d %H:%M:%S")
 
-            metadata = f"Type: {mime_type or 'Unknown'}\n"
-            metadata += f"Size: {size}\n"
-            metadata += f"Created: {created}\n"
+            metadata = _("Type: {mime_type}\n").format(mime_type=mime_type or "Unknown")
+            metadata += _("Size: {size}\n").format(size=size)
+            metadata += _("Created: {created}\n").format(created=created)
 
             return metadata
         except Exception as e:
-            return f"Error retrieving metadata: {str(e)}"
+            return _("Error retrieving metadata: {}").format(str(e))
 
     def format_size(self, size):
         for unit in ["B", "KB", "MB", "GB", "TB"]:
@@ -160,6 +159,11 @@ class FileCard(Gtk.ListBoxRow):
 
     def get_target_format(self):
         return self.target_format
+
+    def update_text(self):
+        self.file_name_label.set_text(os.path.basename(self.file_path))
+        self.metadata_label.set_text(self.get_file_metadata())
+        self.to_label.set_label(_("Convert to:"))
 
 
 class ConversionWindow(Gtk.Window):
@@ -188,9 +192,8 @@ class ConversionWindow(Gtk.Window):
         self.total_weighted_size = 0
         self.converted_weighted_size = 0
         self.settings = self.load_settings()
-        self.autoremove_converted = self.settings.get("autoremove_converted", False)
-        self.apply_settings()
         self.build_ui()
+        self.apply_settings()
 
     def build_ui(self):
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -200,55 +203,55 @@ class ConversionWindow(Gtk.Window):
 
         # File menu
         filemenu = Gtk.Menu()
-        filem = Gtk.MenuItem(label="File")
-        filem.set_submenu(filemenu)
+        self.filem = Gtk.MenuItem(label=_("File"))
+        self.filem.set_submenu(filemenu)
 
-        add_files = Gtk.MenuItem(label="Add files")
-        add_files.connect("activate", self.on_select_files_clicked)
-        filemenu.append(add_files)
+        self.add_files = Gtk.MenuItem(label=_("Add files"))
+        self.add_files.connect("activate", self.on_select_files_clicked)
+        filemenu.append(self.add_files)
 
-        open_folder = Gtk.MenuItem(label="Open folder")
-        open_folder.connect("activate", self.on_open_folder_clicked)
-        filemenu.append(open_folder)
+        self.open_folder = Gtk.MenuItem(label=_("Open folder"))
+        self.open_folder.connect("activate", self.on_open_folder_clicked)
+        filemenu.append(self.open_folder)
 
         # Settings menu
         settingsmenu = Gtk.Menu()
-        settingsm = Gtk.MenuItem(label="Settings")
-        settingsm.set_submenu(settingsmenu)
+        self.settingsm = Gtk.MenuItem(label=_("Settings"))
+        self.settingsm.set_submenu(settingsmenu)
 
-        settings_item = Gtk.MenuItem(label="Preferences")
-        settings_item.connect("activate", self.open_settings)
-        settingsmenu.append(settings_item)
+        self.settings_item = Gtk.MenuItem(label=_("Preferences"))
+        self.settings_item.connect("activate", self.open_settings)
+        settingsmenu.append(self.settings_item)
 
         # Help menu
         helpmenu = Gtk.Menu()
-        helpm = Gtk.MenuItem(label="Help")
-        helpm.set_submenu(helpmenu)
+        self.helpm = Gtk.MenuItem(label=_("Help"))
+        self.helpm.set_submenu(helpmenu)
 
-        about_item = Gtk.MenuItem(label="About")
-        about_item.connect("activate", self.show_about_dialog)
-        helpmenu.append(about_item)
+        self.about_item = Gtk.MenuItem(label=_("About"))
+        self.about_item.connect("activate", self.open_about_dialog)
+        helpmenu.append(self.about_item)
 
-        report_bug = Gtk.MenuItem(label="Report a bug")
-        report_bug.connect("activate", self.report_bug)
-        helpmenu.append(report_bug)
+        self.report_bug = Gtk.MenuItem(label=_("Report a bug"))
+        self.report_bug.connect("activate", self.open_report_bug)
+        helpmenu.append(self.report_bug)
 
-        donate = Gtk.MenuItem(label="Support")
-        donate.connect("activate", self.donate)
-        helpmenu.append(donate)
+        self.donate = Gtk.MenuItem(label=_("Support"))
+        self.donate.connect("activate", self.open_donate)
+        helpmenu.append(self.donate)
 
-        menubar.append(filem)
-        menubar.append(settingsm)
-        menubar.append(helpm)
+        menubar.append(self.filem)
+        menubar.append(self.settingsm)
+        menubar.append(self.helpm)
 
         main_box.pack_start(menubar, False, False, 0)
 
         # Header
-        header_label = Gtk.Label(label="Selected files:")
-        header_label.set_halign(Gtk.Align.START)
-        header_label.set_margin_left(20)
-        header_label.set_margin_right(20)
-        main_box.pack_start(header_label, False, False, 0)
+        self.header_label = Gtk.Label(label=_("Selected files:"))
+        self.header_label.set_halign(Gtk.Align.START)
+        self.header_label.set_margin_left(20)
+        self.header_label.set_margin_right(20)
+        main_box.pack_start(self.header_label, False, False, 0)
 
         # File list
         scrolled_window = Gtk.ScrolledWindow()
@@ -269,7 +272,7 @@ class ConversionWindow(Gtk.Window):
         file_list_container.pack_start(scrolled_window, True, True, 0)
 
         # Create the clear all button (initially hidden)
-        self.clear_all_button = Gtk.Button(label="Clear All")
+        self.clear_all_button = Gtk.Button(label=_("Clear All"))
         self.clear_all_button.set_margin_left(20)
         self.clear_all_button.set_margin_right(20)
         self.clear_all_button.connect("clicked", self.on_clear_all_clicked)
@@ -309,19 +312,19 @@ class ConversionWindow(Gtk.Window):
         # Action buttons
         button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
-        self.convert_button = Gtk.Button(label="Convert")
+        self.convert_button = Gtk.Button(label=_("Convert"))
         self.convert_button.set_margin_right(5)
         self.convert_button.set_margin_bottom(20)
         self.convert_button.get_style_context().add_class("suggested-action")
         self.convert_button.connect("clicked", self.on_convert_clicked)
 
-        cancel_button = Gtk.Button(label="Cancel")
-        cancel_button.set_margin_left(5)
-        cancel_button.set_margin_right(20)
-        cancel_button.set_margin_bottom(20)
-        cancel_button.connect("clicked", self.on_cancel_clicked)
+        self.cancel_button = Gtk.Button(label=_("Cancel"))
+        self.cancel_button.set_margin_left(5)
+        self.cancel_button.set_margin_right(20)
+        self.cancel_button.set_margin_bottom(20)
+        self.cancel_button.connect("clicked", self.on_cancel_clicked)
 
-        button_box.pack_end(cancel_button, False, False, 0)
+        button_box.pack_end(self.cancel_button, False, False, 0)
         button_box.pack_end(self.convert_button, False, False, 0)
 
         main_box.pack_end(button_box, False, False, 0)
@@ -330,7 +333,7 @@ class ConversionWindow(Gtk.Window):
 
     def on_select_files_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(
-            title="Please choose files", parent=self, action=Gtk.FileChooserAction.OPEN
+            title=_("Please choose files"), parent=self, action=Gtk.FileChooserAction.OPEN
         )
         dialog.add_buttons(
             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK
@@ -349,14 +352,14 @@ class ConversionWindow(Gtk.Window):
     def on_convert_clicked(self, widget):
         files_to_convert = self.file_list.get_children()
         if not files_to_convert:
-            self.show_error_dialog("No files selected for conversion.")
+            self.show_error_dialog(_("No files selected for conversion."))
             return
 
-        if self.default_output_dir == "Ask each time":
+        if self.default_output_dir == _("Ask each time"):
             output_dir = self.choose_output_directory()
             if not output_dir:
                 return
-        elif self.default_output_dir == "Choose directory":
+        elif self.default_output_dir == _("Choose directory"):
             output_dir = self.custom_output_dir
         else:  # "Same as input"
             output_dir = None  # Will be set per file in the conversion process
@@ -388,7 +391,9 @@ class ConversionWindow(Gtk.Window):
                 if not target_format:
                     GLib.idle_add(
                         self.show_error_dialog,
-                        f"No valid target format available for {os.path.basename(input_path)}",
+                        _("No valid target format available for {}").format(
+                            os.path.basename(input_path)
+                        ),
                     )
                     continue
 
@@ -436,11 +441,11 @@ class ConversionWindow(Gtk.Window):
                 except Exception as e:
                     GLib.idle_add(
                         self.show_error_dialog,
-                        f"Error converting {os.path.basename(input_path)}: {str(e)}",
+                        _("Error converting {}: {}").format(os.path.basename(input_path), str(e)),
                     )
 
             else:
-                print(f"Unexpected item in file list: {type(file_card)}")
+                print(_("Unexpected item in file list: {}").format(type(file_card)))
 
         if self.autoremove_converted:
             GLib.idle_add(self.remove_converted_files, successfully_converted)
@@ -472,7 +477,9 @@ class ConversionWindow(Gtk.Window):
             estimated_total_time = elapsed_time / self.current_progress
             remaining_time = estimated_total_time - elapsed_time
             time_string = str(timedelta(seconds=int(remaining_time)))
-            progress_text = f"{self.current_progress:.1%} (Est. {time_string} remaining)"
+            progress_text = f"{self.current_progress:.1%} " + _("(Est. {} remaining)").format(
+                time_string
+            )
         else:
             progress_text = f"{self.current_progress:.1%}"
 
@@ -484,8 +491,8 @@ class ConversionWindow(Gtk.Window):
         self.conversion_active = False
         self.convert_button.set_sensitive(True)
         self.progress_bar.set_fraction(1.0)
-        self.progress_bar.set_text("Conversion completed")
-        self.show_info_dialog("Conversion completed successfully!")
+        self.progress_bar.set_text(_("Conversion completed"))
+        self.show_info_dialog(_("Conversion completed successfully!"))
 
         # Schedule the progress bar reset after 5 seconds
         GLib.timeout_add_seconds(5, self.reset_progress_bar)
@@ -519,9 +526,9 @@ class ConversionWindow(Gtk.Window):
             flags=0,
             message_type=Gtk.MessageType.QUESTION,
             buttons=Gtk.ButtonsType.YES_NO,
-            text="Clear all files?",
+            text=_("Clear all files?"),
         )
-        dialog.format_secondary_text("Are you sure you want to remove all files from the list?")
+        dialog.format_secondary_text(_("Are you sure you want to remove all files from the list?"))
         response = dialog.run()
         if response == Gtk.ResponseType.YES:
             self.clear_all_files()
@@ -535,7 +542,9 @@ class ConversionWindow(Gtk.Window):
 
     def choose_output_directory(self):
         dialog = Gtk.FileChooserDialog(
-            title="Select Output Directory", parent=self, action=Gtk.FileChooserAction.SELECT_FOLDER
+            title=_("Select Output Directory"),
+            parent=self,
+            action=Gtk.FileChooserAction.SELECT_FOLDER,
         )
         dialog.add_buttons(
             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK
@@ -554,7 +563,7 @@ class ConversionWindow(Gtk.Window):
             flags=0,
             message_type=Gtk.MessageType.ERROR,
             buttons=Gtk.ButtonsType.OK,
-            text="Error",
+            text=_("Error"),
         )
         dialog.format_secondary_text(message)
         dialog.run()
@@ -567,7 +576,7 @@ class ConversionWindow(Gtk.Window):
                 flags=0,
                 message_type=Gtk.MessageType.INFO,
                 buttons=Gtk.ButtonsType.OK,
-                text="Information",
+                text=_("Information"),
             )
             dialog.format_secondary_text(message)
             dialog.run()
@@ -575,7 +584,9 @@ class ConversionWindow(Gtk.Window):
 
     def on_open_folder_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(
-            title="Please choose a folder", parent=self, action=Gtk.FileChooserAction.SELECT_FOLDER
+            title=_("Please choose a folder"),
+            parent=self,
+            action=Gtk.FileChooserAction.SELECT_FOLDER,
         )
         dialog.add_buttons(
             Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK
@@ -589,13 +600,51 @@ class ConversionWindow(Gtk.Window):
 
         dialog.destroy()
 
+    def open_about_dialog(self, widget):
+        about_dialog = Gtk.AboutDialog()
+        about_dialog.set_transient_for(self)
+        about_dialog.set_modal(True)
+
+        about_dialog.set_program_name("Files Converter")
+        about_dialog.set_version("0.1.0")
+        about_dialog.set_copyright("© 2024 Vladyslav Lodzhuk")
+        about_dialog.set_comments(_("A file conversion utility with context menu integration"))
+        about_dialog.set_website("https://github.com/zaraford/files-converter")
+        about_dialog.set_website_label(_("GitHub Repository"))
+        about_dialog.set_license_type(Gtk.License.MIT_X11)
+
+        # Add the logo
+        icon_path = "/usr/share/icons/hicolor/96x96/apps/files-converter.png"
+        if os.path.exists(icon_path):
+            logo = GdkPixbuf.Pixbuf.new_from_file(icon_path)
+            about_dialog.set_logo(logo)
+        else:
+            print(_("Warning: Icon file not found at {icon_path}").format(icon_path=icon_path))
+
+        about_dialog.run()
+        about_dialog.destroy()
+
+    def open_report_bug(self, widget):
+        Gtk.show_uri_on_window(
+            self, "https://github.com/zaraford/files-converter/issues", Gdk.CURRENT_TIME
+        )
+
+    def open_donate(self, widget):
+        Gtk.show_uri_on_window(self, "https://ko-fi.com/zaraford", Gdk.CURRENT_TIME)
+
+    def get_settings_path(self):
+        config_dir = Path.home() / ".config" / "files-converter"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        return config_dir / "settings.json"
+
     def open_settings(self, widget):
         dialog = SettingsDialog(self, self.settings)
+        dialog.connect("language-changed", self.on_language_changed)
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
             # Update settings
-            self.settings["language"] = dialog.lang_combo.get_active_text()
+            self.settings["language"] = dialog.lang_combo.get_active_id()
             self.settings["theme"] = dialog.theme_combo.get_active_text()
             self.settings["output_directory"] = dialog.dir_combo.get_active_text()
             self.settings["custom_directory"] = dialog.custom_dir_label.get_text()
@@ -608,43 +657,6 @@ class ConversionWindow(Gtk.Window):
 
         dialog.destroy()
 
-    def show_about_dialog(self, widget):
-        about_dialog = Gtk.AboutDialog()
-        about_dialog.set_transient_for(self)
-        about_dialog.set_modal(True)
-
-        about_dialog.set_program_name("Files Converter")
-        about_dialog.set_version("0.1.0")
-        about_dialog.set_copyright("© 2024 Vladyslav Lodzhuk")
-        about_dialog.set_comments("A file conversion utility with context menu integration")
-        about_dialog.set_website("https://github.com/zaraford/files-converter")
-        about_dialog.set_website_label("GitHub Repository")
-        about_dialog.set_license_type(Gtk.License.MIT_X11)
-
-        # Add the logo
-        icon_path = "/usr/share/icons/hicolor/96x96/apps/files-converter.png"
-        if os.path.exists(icon_path):
-            logo = GdkPixbuf.Pixbuf.new_from_file(icon_path)
-            about_dialog.set_logo(logo)
-        else:
-            print(f"Warning: Icon file not found at {icon_path}")
-
-        about_dialog.run()
-        about_dialog.destroy()
-
-    def report_bug(self, widget):
-        Gtk.show_uri_on_window(
-            self, "https://github.com/zaraford/files-converter/issues", Gdk.CURRENT_TIME
-        )
-
-    def donate(self, widget):
-        Gtk.show_uri_on_window(self, "https://ko-fi.com/zaraford", Gdk.CURRENT_TIME)
-
-    def get_settings_path(self):
-        config_dir = Path.home() / ".config" / "files-converter"
-        config_dir.mkdir(parents=True, exist_ok=True)
-        return config_dir / "settings.json"
-
     def save_settings(self):
         settings_path = self.get_settings_path()
         with open(settings_path, "w") as f:
@@ -652,36 +664,47 @@ class ConversionWindow(Gtk.Window):
 
     def load_settings(self):
         settings_path = self.get_settings_path()
+        language = locale.getdefaultlocale()[0][:2]
+        lang_code = (
+            language if language in ["en", "cs", "de", "es", "fr", "it", "pl", "uk"] else "en"
+        )
+        self.load_translations(lang_code)
         default_settings = {
-            "language": "English",
-            "theme": "System default",
-            "output_directory": "Same as input",
+            "language": lang_code,
+            "theme": _("System default"),
+            "output_directory": _("Same as input"),
             "custom_directory": "",
             "notifications_enabled": True,
+            "autoremove_converted": False,
         }
 
         if settings_path.exists():
             try:
                 with open(settings_path, "r") as f:
-                    return json.load(f)
+                    loaded_settings = json.load(f)
+                    # Update default settings with loaded settings
+                    default_settings.update(loaded_settings)
             except json.JSONDecodeError:
-                self.show_info_dialog("Error reading settings file. Using default settings.")
-                return default_settings
+                print(_("Error reading settings file. Using default settings."))
         else:
-            return default_settings
+            # Save default settings if file doesn't exist
+            with open(settings_path, "w") as f:
+                json.dump(default_settings, f, indent=2)
+
+        return default_settings
 
     def apply_settings(self):
         # Apply language
-        if self.settings["language"] == "Українська":
-            # Implement language change logic here
-            pass  # For now, we'll just pass
+        lang_code = self.settings["language"]
+        self.load_translations(lang_code)
+        self.update_interface_text()
 
         # Apply theme
         self.set_theme(self.settings["theme"])
 
         # Apply output directory setting
         self.default_output_dir = self.settings["output_directory"]
-        if self.default_output_dir == "Choose directory":
+        if self.default_output_dir == _("Choose directory"):
             self.custom_output_dir = self.settings["custom_directory"]
         else:
             self.custom_output_dir = None
@@ -690,53 +713,65 @@ class ConversionWindow(Gtk.Window):
         self.notifications_enabled = self.settings["notifications_enabled"]
 
         # Apply autoremove setting
-        self.autoremove_converted = self.settings.get("autoremove_converted", False)
+        self.autoremove_converted = self.settings["autoremove_converted"]
 
-        # Update UI elements if necessary
-        self.update_ui_for_settings()
+    def load_translations(self, lang_code):
+        try:
+            lang = gettext.translation(
+                "files-converter", localedir="/usr/share/locale", languages=[lang_code]
+            )
+            lang.install()
+            global _
+            _ = lang.gettext
+        except FileNotFoundError:
+            print(f"No translation found for {lang_code}.")
+
+    def on_language_changed(self, dialog, lang_code):
+        self.load_translations(lang_code)
+        self.update_interface_text()
+
+    def update_interface_text(self):
+        # Update menu items
+        self.filem.set_label(_("File"))
+        self.settingsm.set_label(_("Settings"))
+        self.helpm.set_label(_("Help"))
+        self.add_files.set_label(_("Add files"))
+        self.open_folder.set_label(_("Open folder"))
+        self.settings_item.set_label(_("Preferences"))
+        self.about_item.set_label(_("About"))
+        self.report_bug.set_label(_("Report a bug"))
+        self.donate.set_label(_("Support"))
+
+        # Update header label
+        self.header_label.set_label(_("Selected files:"))
+
+        # Update clear all button
+        if self.clear_all_button:
+            self.clear_all_button.set_label(_("Clear All"))
+
+        # Update convert button
+        self.convert_button.set_label(_("Convert"))
+        self.cancel_button.set_label(_("Cancel"))
+
+        # Update file cards
+        for child in self.file_list.get_children():
+            if isinstance(child, FileCard):
+                child.update_text()
 
     def set_theme(self, theme):
         settings = Gtk.Settings.get_default()
-        if theme == "System default":
+        if theme == _("System default"):
             # Reset to system default
             settings.reset_property("gtk-application-prefer-dark-theme")
-        elif theme == "Light":
+        elif theme == _("Light"):
             settings.set_property("gtk-application-prefer-dark-theme", False)
-        elif theme == "Dark":
+        elif theme == _("Dark"):
             settings.set_property("gtk-application-prefer-dark-theme", True)
 
         # Force theme update
         self.queue_draw()
         for widget in self.get_children():
             widget.queue_draw()
-
-    def get_current_system_theme(self):
-        settings = Gio.Settings.new("org.gnome.desktop.interface")
-        color_scheme = settings.get_string("color-scheme")
-        if color_scheme == "prefer-dark":
-            return "Dark"
-        else:
-            return "Light"
-
-    def update_ui_for_settings(self):
-        # Update language-specific UI elements
-        if self.settings["language"] == "Українська":
-            # Update labels, button texts, etc. to Ukrainian
-            pass  # Implement when adding full language support
-
-        # Update output directory related UI elements if any
-        if hasattr(self, "output_dir_label"):
-            if self.default_output_dir == "Choose directory":
-                self.output_dir_label.set_text(f"Output Directory: {self.custom_output_dir}")
-            else:
-                self.output_dir_label.set_text(f"Output Directory: {self.default_output_dir}")
-
-        # Update theme-related UI elements
-        if self.settings["theme"] == "System default":
-            current_system_theme = self.get_current_system_theme()
-            self.set_theme(current_system_theme)
-        else:
-            self.set_theme(self.settings["theme"])
 
     def add_file_or_folder(self, path):
         if os.path.isfile(path):
@@ -746,7 +781,7 @@ class ConversionWindow(Gtk.Window):
             self.add_folder(path)
 
     def add_folder(self, folder_path):
-        self.show_progress_dialog("Processing folder", "Scanning for supported files...")
+        self.show_progress_dialog(_("Processing folder"), _("Scanning for supported files..."))
 
         # Record the start time
         self.scan_start_time = time.time()
@@ -809,12 +844,12 @@ class ConversionWindow(Gtk.Window):
             total_files = len(self.file_list.get_children())
 
             if total_files > 0:
-                message = (
-                    f"Added {total_files} supported files.\n" f"Scan completed in {formatted_time}."
-                )
+                message = _(
+                    "Added {total_files} supported files.\nScan completed in {formatted_time}."
+                ).format(total_files=total_files, formatted_time=formatted_time)
                 self.show_info_dialog(message)
             else:
-                self.show_info_dialog("No supported files found in the selected folder.")
+                self.show_info_dialog(_("No supported files found in the selected folder."))
 
             # Reset the start time
             self.scan_start_time = None
@@ -824,10 +859,10 @@ class ConversionWindow(Gtk.Window):
 
     def format_time(self, seconds):
         if seconds < 60:
-            return f"{seconds:.2f} seconds"
+            return f"{seconds:.2f} " + _("seconds")
         else:
             minutes, seconds = divmod(seconds, 60)
-            return f"{int(minutes)} minutes and {seconds:.2f} seconds"
+            return _("{} minutes and").format(int(minutes)) + f" {seconds:.2f} " + _("seconds")
 
     def add_file(self, file_path):
         if file_path not in self.added_files:
@@ -862,8 +897,10 @@ class ConversionWindow(Gtk.Window):
 
 
 class SettingsDialog(Gtk.Dialog):
+    __gsignals__ = {"language-changed": (GObject.SignalFlags.RUN_FIRST, None, (str,))}
+
     def __init__(self, parent, current_settings):
-        super().__init__(title="Preferences", transient_for=parent, flags=0)
+        super().__init__(title=_("Preferences"), transient_for=parent, flags=0)
         self.add_buttons(
             Gtk.STOCK_OK,
             Gtk.ResponseType.OK,
@@ -884,20 +921,31 @@ class SettingsDialog(Gtk.Dialog):
         box.pack_start(self.grid, True, True, 0)
 
         # Language setting
-        lang_label = Gtk.Label(label="Language:")
-        lang_label.set_halign(Gtk.Align.START)
+        self.lang_label = Gtk.Label(label=_("Language:"))
+        self.lang_label.set_halign(Gtk.Align.START)
         self.lang_combo = Gtk.ComboBoxText()
         self.lang_combo.set_hexpand(True)
-        self.lang_combo.append_text("English")
-        self.lang_combo.append_text("Українська")
-        self.lang_combo.set_active(0 if current_settings["language"] == "English" else 1)
+        languages = [
+            ("en", "English"),
+            ("cs", "Čeština"),
+            ("de", "Deutsch"),
+            ("es", "Español"),
+            ("fr", "Français"),
+            ("it", "Italiano"),
+            ("pl", "Polski"),
+            ("uk", "Українська"),
+        ]
+        for lang_code, lang_name in languages:
+            self.lang_combo.append(lang_code, lang_name)
+        self.lang_combo.set_active_id(current_settings["language"])
+        self.lang_combo.connect("changed", self.on_language_changed)
 
         # Theme setting
-        theme_label = Gtk.Label(label="Theme:")
-        theme_label.set_halign(Gtk.Align.START)
+        self.theme_label = Gtk.Label(label=_("Theme:"))
+        self.theme_label.set_halign(Gtk.Align.START)
         self.theme_combo = Gtk.ComboBoxText()
         self.theme_combo.set_hexpand(True)
-        themes = ["System default", "Light", "Dark"]
+        themes = [_("System default"), _("Light"), _("Dark")]
         for theme in themes:
             self.theme_combo.append_text(theme)
         self.theme_combo.set_active(themes.index(current_settings["theme"]))
@@ -913,18 +961,18 @@ class SettingsDialog(Gtk.Dialog):
         theme_box.pack_start(self.theme_icon, False, False, 0)
 
         # Output directory setting
-        dir_label = Gtk.Label(label="Default output directory:")
-        dir_label.set_halign(Gtk.Align.START)
+        self.dir_label = Gtk.Label(label=_("Default output directory:"))
+        self.dir_label.set_halign(Gtk.Align.START)
         self.dir_combo = Gtk.ComboBoxText()
         self.dir_combo.set_hexpand(True)
-        dir_options = ["Same as input", "Choose directory", "Ask each time"]
+        dir_options = [_("Same as input"), _("Choose directory"), _("Ask each time")]
         for option in dir_options:
             self.dir_combo.append_text(option)
         self.dir_combo.set_active(dir_options.index(current_settings["output_directory"]))
         self.dir_combo.connect("changed", self.on_dir_combo_changed)
 
         # Custom directory options
-        self.custom_dir_button = Gtk.Button(label="Choose custom directory")
+        self.custom_dir_button = Gtk.Button(label=_("Choose custom directory"))
         self.custom_dir_button.connect("clicked", self.on_custom_dir_clicked)
         self.custom_dir_label = Gtk.Label(label=current_settings["custom_directory"])
         self.custom_dir_label.set_halign(Gtk.Align.START)
@@ -932,11 +980,11 @@ class SettingsDialog(Gtk.Dialog):
         self.custom_dir_label.set_max_width_chars(30)
 
         # Add widgets to the grid
-        self.grid.attach(lang_label, 0, 0, 1, 1)
+        self.grid.attach(self.lang_label, 0, 0, 1, 1)
         self.grid.attach(self.lang_combo, 1, 0, 1, 1)
-        self.grid.attach(theme_label, 0, 1, 1, 1)
+        self.grid.attach(self.theme_label, 0, 1, 1, 1)
         self.grid.attach(theme_box, 1, 1, 1, 1)
-        self.grid.attach(dir_label, 0, 2, 1, 1)
+        self.grid.attach(self.dir_label, 0, 2, 1, 1)
         self.grid.attach(self.dir_combo, 1, 2, 1, 1)
 
         # Add a separator
@@ -945,32 +993,30 @@ class SettingsDialog(Gtk.Dialog):
 
         # Add a switch for enabling/disabling notifications
         notifications_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
-        notifications_label = Gtk.Label(label="Enable notifications:")
-        notifications_label.set_halign(Gtk.Align.START)
+        self.notifications_label = Gtk.Label(label=_("Enable notifications:"))
+        self.notifications_label.set_halign(Gtk.Align.START)
         self.notifications_switch = Gtk.Switch()
         self.notifications_switch.set_active(current_settings["notifications_enabled"])
-        notifications_box.pack_start(notifications_label, False, False, 0)
+        notifications_box.pack_start(self.notifications_label, False, False, 0)
         notifications_box.pack_end(self.notifications_switch, False, False, 0)
         box.pack_start(notifications_box, False, False, 0)
 
         # Add a switch for auto-removing converted files
         autoremove_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
-        autoremove_label = Gtk.Label(label="Auto-remove converted files:")
-        autoremove_label.set_halign(Gtk.Align.START)
+        self.autoremove_label = Gtk.Label(label=_("Auto-remove converted files:"))
+        self.autoremove_label.set_halign(Gtk.Align.START)
         self.autoremove_switch = Gtk.Switch()
-        self.autoremove_switch.set_active(current_settings.get("autoremove_converted", False))
-        autoremove_box.pack_start(autoremove_label, False, False, 0)
+        self.autoremove_switch.set_active(current_settings["autoremove_converted"])
+        autoremove_box.pack_start(self.autoremove_label, False, False, 0)
         autoremove_box.pack_end(self.autoremove_switch, False, False, 0)
         box.pack_start(autoremove_box, False, False, 0)
-
-        # ... (rest of the existing code) ...
 
         self.show_all()
         self.on_dir_combo_changed(self.dir_combo)
         self.update_theme_icon()
 
     def on_dir_combo_changed(self, combo):
-        show_custom = combo.get_active_text() == "Choose directory"
+        show_custom = combo.get_active_text() == _("Choose directory")
         if show_custom:
             if self.custom_dir_button not in self.grid.get_children():
                 self.grid.attach(self.custom_dir_button, 1, 3, 1, 1)
@@ -987,7 +1033,7 @@ class SettingsDialog(Gtk.Dialog):
 
     def on_custom_dir_clicked(self, button):
         dialog = Gtk.FileChooserDialog(
-            title="Select Custom Output Directory",
+            title=_("Select Custom Output Directory"),
             parent=self,
             action=Gtk.FileChooserAction.SELECT_FOLDER,
         )
@@ -1004,14 +1050,56 @@ class SettingsDialog(Gtk.Dialog):
     def on_theme_changed(self, combo):
         self.update_theme_icon()
 
+    def on_language_changed(self, combo):
+        lang_code = combo.get_active_id()
+        self.emit("language-changed", lang_code)
+        self.update_texts()
+        self.resize(1, 1)
+
+    def update_texts(self):
+        # Update dialog title
+        self.set_title(_("Preferences"))
+
+        # Update labels
+        self.lang_label.set_text(_("Language:"))
+        self.theme_label.set_text(_("Theme:"))
+        self.dir_label.set_text(_("Default output directory:"))
+        self.custom_dir_button.set_label(_("Choose custom directory"))
+        self.notifications_label.set_text(_("Enable notifications:"))
+        self.autoremove_label.set_text(_("Auto-remove converted files:"))
+
+        # Update combo box items
+        self.update_combobox_texts(self.theme_combo, [_("System default"), _("Light"), _("Dark")])
+        self.update_combobox_texts(
+            self.dir_combo, [_("Same as input"), _("Choose directory"), _("Ask each time")]
+        )
+
+        # Update tooltip
+        if self.theme_icon.get_visible():
+            gtk_theme = self.get_current_gtk_theme()
+            tooltip_text = _("Current GTK theme: {gtk_theme}\n\n").format(gtk_theme=gtk_theme)
+            tooltip_text += _(
+                "Note: If you're unable to get a light theme, it may be due to your system's GTK theme settings."
+            )
+            self.theme_icon.set_tooltip_text(tooltip_text)
+
+    def update_combobox_texts(self, combobox, new_texts):
+        model = combobox.get_model()
+        active_index = combobox.get_active()
+        for i, text in enumerate(new_texts):
+            model[i][0] = text
+        combobox.set_active(active_index)
+
     def update_theme_icon(self):
         selected_theme = self.theme_combo.get_active_text()
         gtk_theme = self.get_current_gtk_theme()
 
-        if selected_theme == "Light":
+        if selected_theme == _("Light"):
             self.theme_icon.set_visible(True)
-            tooltip_text = f"Current GTK theme: {gtk_theme}\n\n"
-            tooltip_text += "Note: If you're unable to get a light theme, it may be due to your system's GTK theme settings."
+            tooltip_text = _("Current GTK theme: {gtk_theme}\n\n").format(gtk_theme=gtk_theme)
+            tooltip_text += _(
+                "Note: If you're unable to get a light theme, it may be due to your system's GTK theme settings."
+            )
             self.theme_icon.set_tooltip_text(tooltip_text)
         else:
             self.theme_icon.set_visible(False)

@@ -5,43 +5,326 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-07-20 20:06+0300\n"
-"PO-Revision-Date: 2024-07-20 20:07+0300\n"
-"Last-Translator: zaraford <vlad.lodgyk@gmail.com>\n"
+"POT-Creation-Date: 2024-08-05 19:45+0300\n"
+"PO-Revision-Date: 2024-08-05 19:46+0300\n"
+"Last-Translator: Vladyslav Lodzhuk <vlad.lodgyk@gmail.com>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Poedit 3.4.3\n"
 
-#: src/files_converter/ui.py:13
-msgid "Files Converter"
-msgstr ""
+#: src/files_converter/ui.py:78 src/files_converter/ui.py:166
+msgid "Convert to:"
+msgstr "Конвертувати у:"
 
-#: src/files_converter/ui.py:38
-msgid "Target Format:"
-msgstr ""
+#: src/files_converter/ui.py:136
+#, python-brace-format
+msgid "Type: {mime_type}\n"
+msgstr "Тип: {mime_type}\n"
 
-#: src/files_converter/ui.py:44 src/files_converter/ui.py:118
+#: src/files_converter/ui.py:137
+#, python-brace-format
+msgid "Size: {size}\n"
+msgstr "Розмір: {size}\n"
+
+#: src/files_converter/ui.py:138
+#, python-brace-format
+msgid "Created: {created}\n"
+msgstr "Створено: {created}\n"
+
+#: src/files_converter/ui.py:142
+msgid "Error retrieving metadata: {}"
+msgstr "Помилка отримання метаданих: {}"
+
+#: src/files_converter/ui.py:206 src/files_converter/ui.py:735
+msgid "File"
+msgstr "Файл"
+
+#: src/files_converter/ui.py:209 src/files_converter/ui.py:738
+msgid "Add files"
+msgstr "Додати файли"
+
+#: src/files_converter/ui.py:213 src/files_converter/ui.py:739
+msgid "Open folder"
+msgstr "Відкрити папку"
+
+#: src/files_converter/ui.py:219 src/files_converter/ui.py:736
+msgid "Settings"
+msgstr "Налаштування"
+
+#: src/files_converter/ui.py:222 src/files_converter/ui.py:740
+#: src/files_converter/ui.py:903 src/files_converter/ui.py:1061
+msgid "Preferences"
+msgstr "Параметри"
+
+#: src/files_converter/ui.py:228 src/files_converter/ui.py:737
+msgid "Help"
+msgstr "Допомога"
+
+#: src/files_converter/ui.py:231 src/files_converter/ui.py:741
+msgid "About"
+msgstr "Про програму"
+
+#: src/files_converter/ui.py:235 src/files_converter/ui.py:742
+msgid "Report a bug"
+msgstr "Повідомити про помилку"
+
+#: src/files_converter/ui.py:239 src/files_converter/ui.py:743
+msgid "Support"
+msgstr "Підтримати"
+
+#: src/files_converter/ui.py:250 src/files_converter/ui.py:746
+msgid "Selected files:"
+msgstr "Вибрані файли:"
+
+#: src/files_converter/ui.py:275 src/files_converter/ui.py:750
+msgid "Clear All"
+msgstr "Очистити все"
+
+#: src/files_converter/ui.py:315 src/files_converter/ui.py:753
 msgid "Convert"
-msgstr ""
+msgstr "Конвертувати"
 
-#: src/files_converter/ui.py:72
+#: src/files_converter/ui.py:321 src/files_converter/ui.py:754
+msgid "Cancel"
+msgstr "Скасувати"
+
+#: src/files_converter/ui.py:336
+msgid "Please choose files"
+msgstr "Будь ласка, виберіть файли"
+
+#: src/files_converter/ui.py:355
+msgid "No files selected for conversion."
+msgstr "Файлів для конвертації не вибрано."
+
+#: src/files_converter/ui.py:358 src/files_converter/ui.py:968
+#: src/files_converter/ui.py:1074
+msgid "Ask each time"
+msgstr "Запитувати кожного разу"
+
+#: src/files_converter/ui.py:362 src/files_converter/ui.py:707
+#: src/files_converter/ui.py:968 src/files_converter/ui.py:1019
+#: src/files_converter/ui.py:1074
+msgid "Choose directory"
+msgstr "Вибрати директорію"
+
+#: src/files_converter/ui.py:394
+msgid "No valid target format available for {}"
+msgstr "Немає дійсного цільового формату для {}"
+
+#: src/files_converter/ui.py:444
+msgid "Error converting {}: {}"
+msgstr "Помилка конвертації {}: {}"
+
+#: src/files_converter/ui.py:448
+msgid "Unexpected item in file list: {}"
+msgstr "Неочікуваний елемент у списку файлів: {}"
+
+#: src/files_converter/ui.py:480
+msgid "(Est. {} remaining)"
+msgstr "(Прибл. {} залишилось)"
+
+#: src/files_converter/ui.py:494
+msgid "Conversion completed"
+msgstr "Конвертацію завершено"
+
+#: src/files_converter/ui.py:495
+msgid "Conversion completed successfully!"
+msgstr "Конвертацію успішно завершено!"
+
+#: src/files_converter/ui.py:529
+msgid "Clear all files?"
+msgstr "Очистити всі файли?"
+
+#: src/files_converter/ui.py:531
+msgid "Are you sure you want to remove all files from the list?"
+msgstr "Ви впевнені, що хочете видалити всі файли зі списку?"
+
+#: src/files_converter/ui.py:545
 msgid "Select Output Directory"
-msgstr ""
+msgstr "Виберіть директорію для виводу"
 
-#: src/files_converter/ui.py:96
-msgid "Conversion Completed"
-msgstr ""
+#: src/files_converter/ui.py:566
+msgid "Error"
+msgstr "Помилка"
 
-#: src/files_converter/ui.py:98
-msgid "All files have been successfully converted."
-msgstr ""
+#: src/files_converter/ui.py:579
+msgid "Information"
+msgstr "Інформація"
 
-#: src/files_converter/ui.py:119
-msgid "Convert selected files"
+#: src/files_converter/ui.py:587
+msgid "Please choose a folder"
+msgstr "Будь ласка, виберіть папку"
+
+#: src/files_converter/ui.py:611
+msgid "A file conversion utility with context menu integration"
+msgstr "Інструмент для конвертації файлів з інтеграцією в контекстне меню"
+
+#: src/files_converter/ui.py:613
+msgid "GitHub Repository"
+msgstr "Репозиторій GitHub"
+
+#: src/files_converter/ui.py:622
+#, python-brace-format
+msgid "Warning: Icon file not found at {icon_path}"
+msgstr "Попередження: Файл іконки не знайдено за адресою {icon_path}"
+
+#: src/files_converter/ui.py:674 src/files_converter/ui.py:763
+#: src/files_converter/ui.py:948 src/files_converter/ui.py:1072
+msgid "System default"
+msgstr "Системні налаштування"
+
+#: src/files_converter/ui.py:675 src/files_converter/ui.py:968
+#: src/files_converter/ui.py:1074
+msgid "Same as input"
+msgstr "Те саме, що і ввід"
+
+#: src/files_converter/ui.py:688
+msgid "Error reading settings file. Using default settings."
 msgstr ""
+"Помилка читання файлу налаштувань. Використовуються стандартні налаштування."
+
+#: src/files_converter/ui.py:766 src/files_converter/ui.py:948
+#: src/files_converter/ui.py:1072 src/files_converter/ui.py:1097
+msgid "Light"
+msgstr "Світла"
+
+#: src/files_converter/ui.py:768 src/files_converter/ui.py:948
+#: src/files_converter/ui.py:1072
+msgid "Dark"
+msgstr "Темна"
+
+#: src/files_converter/ui.py:784
+msgid "Processing folder"
+msgstr "Обробка папки"
+
+#: src/files_converter/ui.py:784
+msgid "Scanning for supported files..."
+msgstr "Сканування на наявність підтримуваних файлів..."
+
+#: src/files_converter/ui.py:848
+#, python-brace-format
+msgid ""
+"Added {total_files} supported files.\n"
+"Scan completed in {formatted_time}."
+msgstr ""
+"Додано {total_files} підтримуваних файлів.\n"
+"Сканування завершено у {formatted_time}."
+
+#: src/files_converter/ui.py:852
+msgid "No supported files found in the selected folder."
+msgstr "У вибраній папці не знайдено підтримуваних файлів."
+
+#: src/files_converter/ui.py:862 src/files_converter/ui.py:865
+msgid "seconds"
+msgstr "секунд"
+
+#: src/files_converter/ui.py:865
+msgid "{} minutes and"
+msgstr "{} хвилин та"
+
+#: src/files_converter/ui.py:924 src/files_converter/ui.py:1064
+msgid "Language:"
+msgstr "Мова:"
+
+#: src/files_converter/ui.py:944 src/files_converter/ui.py:1065
+msgid "Theme:"
+msgstr "Тема:"
+
+#: src/files_converter/ui.py:964 src/files_converter/ui.py:1066
+msgid "Default output directory:"
+msgstr "Стандартна директорія для виводу:"
+
+#: src/files_converter/ui.py:975 src/files_converter/ui.py:1067
+msgid "Choose custom directory"
+msgstr "Вибрати власну директорію"
+
+#: src/files_converter/ui.py:996 src/files_converter/ui.py:1068
+msgid "Enable notifications:"
+msgstr "Увімкнути сповіщення:"
+
+#: src/files_converter/ui.py:1006 src/files_converter/ui.py:1069
+msgid "Auto-remove converted files:"
+msgstr "Автоматично видаляти конвертовані файли:"
+
+#: src/files_converter/ui.py:1036
+msgid "Select Custom Output Directory"
+msgstr "Вибрати власну директорію для виводу"
+
+#: src/files_converter/ui.py:1080 src/files_converter/ui.py:1099
+#, python-brace-format
+msgid ""
+"Current GTK theme: {gtk_theme}\n"
+"\n"
+msgstr ""
+"Поточна тема GTK: {gtk_theme}\n"
+"\n"
+
+#: src/files_converter/ui.py:1082 src/files_converter/ui.py:1101
+msgid ""
+"Note: If you're unable to get a light theme, it may be due to your system's "
+"GTK theme settings."
+msgstr ""
+"Примітка: Якщо вам не вдається вибрати світлу тему, це може бути через "
+"налаштування теми GTK вашої системи."
+
+#: src/files_converter/converter.py:61
+#, python-brace-format
+msgid "Unsupported file type: {file_type}"
+msgstr "Непідтримуваний тип файлу: {file_type}"
+
+#: src/files_converter/converter.py:110
+#, python-brace-format
+msgid "ffmpeg process failed with return code: {process.returncode}"
+msgstr ""
+"процес ffmpeg завершився невдало з кодом повернення: {process.returncode}"
+
+#: src/files_converter/converter.py:125
+msgid "Inkscape is required for vector conversions but is not installed."
+msgstr ""
+"Для конвертації векторних файлів потрібен Inkscape, але він не встановлений."
+
+#: src/files_converter/converter.py:165
+msgid ""
+"Unsupported document conversion: {os.path.splitext(input_path)[1]} to "
+"{target_format}"
+msgstr ""
+"Непідтримувана конвертація документа: {os.path.splitext(input_path)[1]} у "
+"{target_format}"
+
+#: src/files_converter/converter.py:196
+#, python-brace-format
+msgid "Unsupported archive format: {target_format}"
+msgstr "Непідтримуваний формат архіву: {target_format}"
+
+#: src/files_converter/converter.py:206
+#, python-brace-format
+msgid "Failed to convert ebook from {input_path} to {output_path}"
+msgstr ""
+"Не вдалося конвертувати електронну книгу з {input_path} у {output_path}"
+
+#~ msgid "Error converting {os.path.basename(input_path)}: {str(e)}"
+#~ msgstr "Помилка конвертації {os.path.basename(input_path)}: {str(e)}"
+
+#~ msgid "{self.current_progress:.1%} (Est. {time_string} remaining)"
+#~ msgstr "{self.current_progress:.1%} (Прибл. {time_string} залишилось)"
+
+#~ msgid "{seconds:.2f} seconds"
+#~ msgstr "{seconds:.2f} секунд"
+
+#~ msgid "{int(minutes)} minutes and {seconds:.2f} seconds"
+#~ msgstr "{int(minutes)} хвилин та {seconds:.2f} секунд"
+
+#~ msgid "OK"
+#~ msgstr "Ок"
+
+#, fuzzy
+#~| msgid "Convert"
+#~ msgid "Files Converter"
+#~ msgstr "Конвертувати"

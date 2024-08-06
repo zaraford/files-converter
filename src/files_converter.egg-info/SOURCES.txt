@@ -10,6 +10,14 @@ icons/hicolor/48x48/apps/files-converter.png
 icons/hicolor/512x512/apps/files-converter.png
 icons/hicolor/64x64/apps/files-converter.png
 icons/hicolor/96x96/apps/files-converter.png
+locale/cs/LC_MESSAGES/files-converter.mo
+locale/de/LC_MESSAGES/files-converter.mo
+locale/en/LC_MESSAGES/files-converter.mo
+locale/es/LC_MESSAGES/files-converter.mo
+locale/fr/LC_MESSAGES/files-converter.mo
+locale/it/LC_MESSAGES/files-converter.mo
+locale/pl/LC_MESSAGES/files-converter.mo
+locale/uk/LC_MESSAGES/files-converter.mo
 src/files_converter/__init__.py
 src/files_converter/__main__.py
 src/files_converter/converter.py

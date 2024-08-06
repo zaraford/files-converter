@@ -4,11 +4,14 @@ import shutil
 import subprocess
 import tarfile
 import zipfile
+import gettext
 
 import docx
 import ffmpeg
 import PyPDF2
 from PIL import Image
+
+_ = gettext.gettext
 
 
 class FileConverter:
@@ -55,7 +58,7 @@ class FileConverter:
         elif file_type == "ebooks":
             self._convert_ebook(input_path, output_path, target_format)
         else:
-            raise ValueError(f"Unsupported file type: {file_type}")
+            raise ValueError(_(f"Unsupported file type: {file_type}"))
 
     def _convert_photo(self, input_path, output_path, target_format):
         with Image.open(input_path) as img:
@@ -104,7 +107,7 @@ class FileConverter:
             process.wait()
 
             if process.returncode != 0:
-                raise Exception(f"ffmpeg process failed with return code: {process.returncode}")
+                raise Exception(_(f"ffmpeg process failed with return code: {process.returncode}"))
 
         except ffmpeg.Error as e:
             print("stdout:", e.stdout.decode("utf8"))
@@ -118,7 +121,9 @@ class FileConverter:
         if shutil.which("inkscape"):
             subprocess.run(["inkscape", input_path, f"--export-filename={output_path}"])
         else:
-            raise RuntimeError("Inkscape is required for vector conversions but is not installed.")
+            raise RuntimeError(
+                _("Inkscape is required for vector conversions but is not installed.")
+            )
 
     def _convert_audio(self, input_path, output_path, target_format):
         (
@@ -156,7 +161,9 @@ class FileConverter:
                         txt_file.write(para.text + "\n")
         else:
             raise ValueError(
-                f"Unsupported document conversion: {os.path.splitext(input_path)[1]} to {target_format}"
+                _(
+                    f"Unsupported document conversion: {os.path.splitext(input_path)[1]} to {target_format}"
+                )
             )
 
     def _convert_archive(self, input_path, output_path, target_format):
@@ -186,7 +193,7 @@ class FileConverter:
             elif target_format == "7z":
                 subprocess.run(["7z", "a", output_path, f"{temp_dir}/*"])
             else:
-                raise ValueError(f"Unsupported archive format: {target_format}")
+                raise ValueError(_(f"Unsupported archive format: {target_format}"))
 
         finally:
             # Clean up temporary directory
@@ -196,7 +203,7 @@ class FileConverter:
         try:
             subprocess.run(["ebook-convert", input_path, output_path], check=True)
         except subprocess.CalledProcessError:
-            raise RuntimeError(f"Failed to convert ebook from {input_path} to {output_path}")
+            raise RuntimeError(_(f"Failed to convert ebook from {input_path} to {output_path}"))
 
     def batch_convert(self, file_list, output_dir, target_format):
         for input_path in file_list:
