@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Vladyslav Lodzhuk <vlad.lodgyk@gmail.com>
 Build-Depends: debhelper (>= 11), dh-python, python3-all, python3-setuptools
 Standards-Version: 4.5.0
-Homepage: https://github.com/yourusername/files-converter
+Homepage: https://github.com/zaraford/files-converter
 
 Package: files-converter
 Architecture: all
