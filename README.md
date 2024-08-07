@@ -41,7 +41,7 @@ sudo dpkg -r files-converter
 ```
 or:
 ```
-sudo dpkg -purge files-converter
+sudo dpkg --purge files-converter
 ```
 if you want delete configuration files too.
 
