@@ -2,7 +2,10 @@ Pillow
 PyPDF2
 calibre
 ffmpeg-python
+odfpy
+pdf2docx
 pygobject
 python-docx
 python-magic
 python-nautilus
+striprtf

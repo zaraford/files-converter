@@ -799,7 +799,7 @@ class ConversionWindow(Gtk.Window):
 
     @staticmethod
     def is_supported_file(file_path, supported_extensions):
-        _, ext = os.path.splitext(file_path)
+        ext = "." + ".".join(os.path.basename(file_path).split(os.extsep)[1:])
         if ext.lower() in supported_extensions:
             return file_path
         return None

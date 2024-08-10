@@ -62,6 +62,9 @@ setup(
         "python-nautilus",
         "calibre",
         "python-magic",
+        "pdf2docx",
+        "striprtf",
+        "odfpy",
     ],
     entry_points={
         "console_scripts": [

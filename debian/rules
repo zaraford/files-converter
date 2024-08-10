@@ -14,6 +14,9 @@ override_dh_installchangelogs:
 	dh_installchangelogs
 	rm -f debian/files-converter/usr/share/doc/files-converter/changelog
 
+override_dh_auto_test:
+	python3 -m unittest discover -v tests
+
 # Ensure icons are installed correctly
 override_dh_install:
 	dh_install
