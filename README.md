@@ -11,11 +11,11 @@ types including photos, videos, vectors, audio, documents, and archives.</p>
 
 #### Photos: jpg, png, gif, bmp, tiff, webp
 #### Videos: mp4, avi, mov, mkv, webm
-#### Vectors: svg, eps, ai
+#### Vectors: svg, eps
 #### Audio: mp3, wav, ogg, flac, aac
 #### Documents: pdf, docx, txt, rtf, odt
 #### Archives: zip, tar, gz, rar, 7z
-#### Ebooks: epub, mobi, azw3, fb2, lit, txt, rtf, pdf
+#### Ebooks: epub, mobi, azw3, fb2, txt, rtf, pdf
 
 ## Screenshot
 <div align="center">
@@ -23,7 +23,8 @@ types including photos, videos, vectors, audio, documents, and archives.</p>
 </div>
 
 ## Installation instructions
-Ubuntu/Debian 
+### Ubuntu/Debian 
+
 Install from deb package 
 
 ### Build from source
