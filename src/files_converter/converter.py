@@ -205,7 +205,6 @@ class FileConverter:
                 cv.convert(output_path)
                 cv.close()
             elif input_path.endswith(".txt"):
-                # Create a new DOCX document
                 doc = docx.Document()
 
                 # Read the TXT file and add its content to the DOCX
@@ -213,7 +212,6 @@ class FileConverter:
                     for line in txt_file:
                         doc.add_paragraph(line.strip())
 
-                # Save the DOCX file
                 doc.save(output_path)
             elif input_path.endswith(".rtf"):
                 # Read the RTF file
@@ -223,20 +221,16 @@ class FileConverter:
                 # Convert RTF to plain text
                 plain_text = rtf_to_text(rtf_text)
 
-                # Create a new DOCX document
                 doc = docx.Document()
 
                 # Add the content to the DOCX
                 for paragraph in plain_text.split("\n"):
                     doc.add_paragraph(paragraph)
 
-                # Save the DOCX file
                 doc.save(output_path)
             elif input_path.endswith(".odt"):
-                # Load the ODT document
                 odt_doc = load(input_path)
 
-                # Create a new DOCX document
                 docx_doc = docx.Document()
 
                 # Iterate through the ODT content
@@ -244,15 +238,9 @@ class FileConverter:
                     # Extract text from the paragraph
                     paragraph_text = teletype.extractText(element)
 
-                    # Add the paragraph to the DOCX document
                     docx_doc.add_paragraph(paragraph_text)
 
-                # Save the DOCX file
                 docx_doc.save(output_path)
-            else:
-                raise ValueError(
-                    _(f"Unsupported conversion to DOCX from {os.path.splitext(input_path)[1]}")
-                )
         elif target_format == "rtf":
             if input_path.endswith(".pdf"):
                 with open(input_path, "rb") as pdf_file:
@@ -277,7 +265,6 @@ class FileConverter:
                 with open(output_path, "w", encoding="utf-8") as rtf_file:
                     rtf_file.write(rtf_content)
             elif input_path.endswith(".txt"):
-                # Read the TXT file
                 with open(input_path, "r", encoding="utf-8") as txt_file:
                     text_content = txt_file.read()
 
@@ -291,11 +278,9 @@ class FileConverter:
 
                 rtf_content += "}"
 
-                # Write the RTF content to the output file
                 with open(output_path, "w", encoding="utf-8") as rtf_file:
                     rtf_file.write(rtf_content)
             elif input_path.endswith(".odt"):
-                # Load the ODT document
                 odt_doc = load(input_path)
 
                 # Create RTF header
@@ -310,20 +295,13 @@ class FileConverter:
 
                     # Add the paragraph to RTF content
                     rtf_content += paragraph_text.replace("\n", "\\par\n") + "\\par\n"
-
-                # Close RTF document
+                
                 rtf_content += "}"
 
-                # Write RTF content to file
                 with open(output_path, "w", encoding="utf-8") as rtf_file:
                     rtf_file.write(rtf_content)
-            else:
-                raise ValueError(
-                    _(f"Unsupported conversion to RTF from {os.path.splitext(input_path)[1]}")
-                )
         elif target_format == "odt":
             if input_path.endswith(".pdf"):
-                # Create a new ODT document
                 doc = OpenDocumentText()
 
                 # Read the PDF and extract text
@@ -336,13 +314,10 @@ class FileConverter:
                             p = P(text=line)
                             doc.text.addElement(p)
 
-                # Save the ODT file
                 doc.save(output_path)
             elif input_path.endswith(".docx"):
-                # Create a new ODT document
                 odt_doc = OpenDocumentText()
 
-                # Read the DOCX file
                 docx_doc = docx.Document(input_path)
 
                 # Create some basic styles
@@ -366,10 +341,8 @@ class FileConverter:
                         odt_para.addElement(span)
                     odt_doc.text.addElement(odt_para)
 
-                # Save the ODT file
                 odt_doc.save(output_path)
             elif input_path.endswith(".txt"):
-                # Create a new ODT document
                 odt_doc = OpenDocumentText()
 
                 # Create a default text style
@@ -384,10 +357,8 @@ class FileConverter:
                         p.addText(line.strip())
                         odt_doc.text.addElement(p)
 
-                # Save the ODT file
                 odt_doc.save(output_path)
             elif input_path.endswith(".rtf"):
-                # Create a new ODT document
                 odt_doc = OpenDocumentText()
 
                 # Create a default text style
@@ -395,7 +366,6 @@ class FileConverter:
                 style_default.addElement(TextProperties(fontname="Arial", fontsize="12pt"))
                 odt_doc.automaticstyles.addElement(style_default)
 
-                # Read the RTF file
                 with open(input_path, "r", encoding="utf-8") as rtf_file:
                     rtf_text = rtf_file.read()
 
@@ -408,16 +378,11 @@ class FileConverter:
                     p.addText(paragraph)
                     odt_doc.text.addElement(p)
 
-                # Save the ODT file
                 odt_doc.save(output_path)
-            else:
-                raise ValueError(
-                    _(f"Unsupported conversion to ODT from {os.path.splitext(input_path)[1]}")
-                )
         else:
             raise ValueError(
-                _(
-                    f"Unsupported document conversion: {os.path.splitext(input_path)[1]} to {target_format}"
+                _("Unsupported document conversion: {} to {}").format(
+                    os.path.splitext(input_path)[1], target_format
                 )
             )
 
@@ -439,7 +404,9 @@ class FileConverter:
                 subprocess.run(["7z", "x", input_path, f"-o{temp_dir}"], check=True)
             else:
                 raise ValueError(
-                    _(f"Unsupported input archive format: {os.path.splitext(input_path)[1]}")
+                    _("Unsupported input archive format: {}").format(
+                        os.path.splitext(input_path)[1]
+                    )
                 )
 
             # Create the output archive
@@ -467,12 +434,12 @@ class FileConverter:
             elif target_format == "7z":
                 subprocess.run(["7z", "a", output_path, temp_dir], check=True)
             else:
-                raise ValueError(_(f"Unsupported output archive format: {target_format}"))
+                raise ValueError(_("Unsupported output archive format: {}").format(target_format))
 
         except subprocess.CalledProcessError as e:
-            raise RuntimeError(_(f"Error during archive conversion: {str(e)}"))
+            raise RuntimeError(_("Error during archive conversion: {}").format(str(e)))
         except Exception as e:
-            raise ValueError(_(f"Error during archive conversion: {str(e)}"))
+            raise ValueError(_("Error during archive conversion: {}").format(str(e)))
         finally:
             # Clean up temporary directory
             shutil.rmtree(temp_dir, ignore_errors=True)
@@ -481,4 +448,8 @@ class FileConverter:
         try:
             subprocess.run(["ebook-convert", input_path, output_path], check=True)
         except subprocess.CalledProcessError:
-            raise RuntimeError(_(f"Failed to convert ebook from {input_path} to {output_path}"))
+            raise RuntimeError(
+                _("Failed to convert ebook from {input_path} to {output_path}").format(
+                    input_path=input_path, output_path=output_path
+                )
+            )

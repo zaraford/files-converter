@@ -8,7 +8,7 @@ Homepage: https://github.com/zaraford/files-converter
 
 Package: files-converter
 Architecture: all
-Depends: ${python3:Depends}, ${misc:Depends}, python3-gi, python3-nautilus, ffmpeg, librsvg2-common, rar, unrar, python3-docx, python3-pypdf2, calibre
+Depends: ${python3:Depends}, ${misc:Depends}, python3-gi, python3-nautilus, libgirepository1.0-dev, libcairo2-dev, pkg-config, python3-dev, ffmpeg, inkscape, librsvg2-common, rar, unrar,  calibre
 Description: File conversion utility with context menu integration
  Files Converter is a versatile file conversion utility that integrates
  with the Nautilus file manager, allowing users to convert various file

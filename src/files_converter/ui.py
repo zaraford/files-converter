@@ -1088,7 +1088,8 @@ class SettingsDialog(Gtk.Dialog):
         )
 
         # Update custom directory label if not selected
-        self.custom_dir_label.set_text(_("Not selected"))
+        if not self.current_settings["custom_directory"]:
+            self.custom_dir_label.set_text(_("Not selected"))
 
         # Update tooltip
         if self.theme_icon.get_visible():
