@@ -9,13 +9,19 @@ types including photos, videos, vectors, audio, documents, and archives.</p>
 
 ## Supported formats
 
-#### Photos: jpg, png, gif, bmp, tiff, webp
-#### Videos: mp4, avi, mov, mkv, webm
-#### Vectors: svg, eps
-#### Audio: mp3, wav, ogg, flac, aac
-#### Documents: pdf, docx, txt, rtf, odt
-#### Archives: zip, tar, gz, rar, 7z
-#### Ebooks: epub, mobi, azw3, fb2, txt, rtf, pdf
+Photos: jpg, png, gif, bmp, tiff, webp
+
+Videos: mp4, avi, mov, mkv, webm
+
+Vectors: svg, eps
+
+Audio: mp3, wav, ogg, flac, aac
+
+Documents: pdf, docx, txt, rtf, odt
+
+Archives: zip, tar, gz, rar, 7z
+
+Ebooks: epub, mobi, azw3, fb2, txt, rtf, pdf
 
 ## Screenshot
 <div align="center">
@@ -23,28 +29,64 @@ types including photos, videos, vectors, audio, documents, and archives.</p>
 </div>
 
 ## Installation instructions
-### Ubuntu/Debian 
-
-Install from deb package 
-
-### Build from source
-Build and install by running:
+### Preparation (Required Steps)
 ```
 git clone https://github.com/zaraford/files-converter.git
 cd files-converter
+pip install -r requirements.txt
+```
+If you encounter issues with `pycairo`, you can resolve them by installing the following dependencies:
+```
+sudo apt-get update
+sudo apt-get install -y libcairo2-dev pkg-config python3-dev libgirepository1.0-dev
+```
+
+### Ubuntu/Debian 
+
+#### Install from `.deb` Package
+To install Files Converter using the pre-built .deb package:
+```
+sudo dpkg -i files-converter_0.1.0-1_all.deb
+sudo apt-get install -f
+```
+This will install any missing dependencies and complete the installation.
+#### Build from Source
+If you prefer to build and install the package from source, follow these steps:
+
+1. Build the package:
+```
 dpkg-buildpackage -us -uc -b
+```
+2. Install the generated `.deb` file:
+```
 sudo dpkg -i ../files-converter_0.1.0-1_all.deb
 sudo apt-get install -f
 ```
-Can be removed with:
+#### Uninstallation
+You can remove Files Converter using:
 ```
 sudo dpkg -r files-converter
 ```
-or:
+To also remove configuration files:
 ```
 sudo dpkg --purge files-converter
 ```
-if you want delete configuration files too.
+<!--
+### Fedora/CentOS/RHEL
+#### Install from `.rpm` Package
+Install from `.rpm` package:
+```
+sudo rpm -i files-converter-0.1.0-2.noarch.rpm
+```
+#### Uninstallation
+To remove the package:
+```
+sudo rpm -e files-converter
+```
+-->
+### Flatpak (Coming Soon)
+Files Converter will soon be available on Flathub, making installation easy across multiple Linux distributions. Stay tuned for updates.
+
 
 ## Donations
 Do you like the utility? Would you like to support its development? Feel free to donate.
@@ -53,4 +95,4 @@ Do you like the utility? Would you like to support its development? Feel free to
 </div> 
 
 ## License
-MIT
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
