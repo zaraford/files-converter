@@ -7,6 +7,11 @@ with the Nautilus file manager, allowing users to convert various file
 types including photos, videos, vectors, audio, documents, and archives.</p>
 </div>
 
+## Master branch status
+
+[![Scanning and test](https://github.com/zaraford/files-converter/actions/workflows/ci.yml/badge.svg)](https://github.com/zaraford/files-converter/actions/workflows/ci.yml)
+
+
 ## Supported formats
 
 Photos: jpg, png, gif, bmp, tiff, webp
