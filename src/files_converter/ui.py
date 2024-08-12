@@ -11,6 +11,8 @@ from pathlib import Path
 import sys
 import threading
 import time
+import requests
+from packaging import version
 from datetime import datetime, timedelta
 from functools import partial
 import mimetypes
@@ -235,6 +237,10 @@ class ConversionWindow(Gtk.Window):
         self.report_bug = Gtk.MenuItem(label=_("Report a bug"))
         self.report_bug.connect("activate", self.open_report_bug)
         helpmenu.append(self.report_bug)
+        
+        self.check_updates = Gtk.MenuItem(label=_("Check for Updates"))
+        self.check_updates.connect("activate", self.check_for_updates)
+        helpmenu.append(self.check_updates)
 
         self.donate = Gtk.MenuItem(label=_("Support"))
         self.donate.connect("activate", self.open_donate)
@@ -729,6 +735,7 @@ class ConversionWindow(Gtk.Window):
         self.settings_item.set_label(_("Preferences"))
         self.about_item.set_label(_("About"))
         self.report_bug.set_label(_("Report a bug"))
+        self.check_updates.set_label(_("Check for Updates"))
         self.donate.set_label(_("Support"))
 
         # Update header label
@@ -883,6 +890,32 @@ class ConversionWindow(Gtk.Window):
             self.file_list.remove(file_card)
             self.added_files.remove(file_card.get_file_path())
         self.update_clear_all_button()
+        
+    def check_for_updates(self, widget):
+        current_version = "0.1.0"
+        try:
+            response = requests.get("https://api.github.com/repos/zaraford/files-converter/releases/latest")
+            latest_release = response.json()
+            latest_version = latest_release["tag_name"].lstrip('v')
+            
+            if version.parse(latest_version) > version.parse(current_version):
+                message = _("A new version ({}) is available. Would you like to open the download page?").format(latest_version)
+                dialog = Gtk.MessageDialog(
+                    transient_for=self,
+                    flags=0,
+                    message_type=Gtk.MessageType.QUESTION,
+                    buttons=Gtk.ButtonsType.YES_NO,
+                    text=_("Update Available")
+                )
+                dialog.format_secondary_text(message)
+                response = dialog.run()
+                if response == Gtk.ResponseType.YES:
+                    Gtk.show_uri_on_window(self, "https://github.com/zaraford/files-converter/releases", Gdk.CURRENT_TIME)
+                dialog.destroy()
+            else:
+                self.show_info_dialog(_("You are using the latest version."))
+        except Exception as e:
+            self.show_error_dialog(_("Failed to check for updates: {}").format(str(e)))
 
 
 class SettingsDialog(Gtk.Dialog):

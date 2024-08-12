@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-11 16:37+0300\n"
-"PO-Revision-Date: 2024-08-11 16:43+0300\n"
+"POT-Creation-Date: 2024-08-12 15:20+0300\n"
+"PO-Revision-Date: 2024-08-12 15:27+0300\n"
 "Last-Translator: Vladyslav Lodzhuk <vlad.lodgyk@gmail.com>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -18,92 +18,96 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 3.4.3\n"
 
-#: src/files_converter/ui.py:78 src/files_converter/ui.py:166
+#: src/files_converter/ui.py:80 src/files_converter/ui.py:168
 msgid "Convert to:"
 msgstr "Konvertieren in:"
 
-#: src/files_converter/ui.py:136
+#: src/files_converter/ui.py:138
 #, fuzzy, python-brace-format
 #| msgid "Type: {mime_type or 'Unknown'}\n"
 msgid "Type: {mime_type}\n"
 msgstr "Typ: {mime_type}\n"
 
-#: src/files_converter/ui.py:137
+#: src/files_converter/ui.py:139
 #, python-brace-format
 msgid "Size: {size}\n"
 msgstr "Größe: {size}\n"
 
-#: src/files_converter/ui.py:138
+#: src/files_converter/ui.py:140
 #, python-brace-format
 msgid "Created: {created}\n"
 msgstr "Erstellt: {created}\n"
 
-#: src/files_converter/ui.py:142
+#: src/files_converter/ui.py:144
 msgid "Error retrieving metadata: {}"
 msgstr "Fehler beim Abrufen der Metadaten: {}"
 
-#: src/files_converter/ui.py:206 src/files_converter/ui.py:724
+#: src/files_converter/ui.py:208 src/files_converter/ui.py:730
 msgid "File"
 msgstr "Datei"
 
-#: src/files_converter/ui.py:209 src/files_converter/ui.py:727
+#: src/files_converter/ui.py:211 src/files_converter/ui.py:733
 msgid "Add files"
 msgstr "Dateien hinzufügen"
 
-#: src/files_converter/ui.py:213 src/files_converter/ui.py:728
+#: src/files_converter/ui.py:215 src/files_converter/ui.py:734
 msgid "Open folder"
 msgstr "Ordner öffnen"
 
-#: src/files_converter/ui.py:219 src/files_converter/ui.py:725
+#: src/files_converter/ui.py:221 src/files_converter/ui.py:731
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: src/files_converter/ui.py:222 src/files_converter/ui.py:729
-#: src/files_converter/ui.py:892 src/files_converter/ui.py:1066
+#: src/files_converter/ui.py:224 src/files_converter/ui.py:735
+#: src/files_converter/ui.py:925 src/files_converter/ui.py:1099
 msgid "Preferences"
 msgstr "Voreinstellungen"
 
-#: src/files_converter/ui.py:228 src/files_converter/ui.py:726
+#: src/files_converter/ui.py:230 src/files_converter/ui.py:732
 msgid "Help"
 msgstr "Hilfe"
 
-#: src/files_converter/ui.py:231 src/files_converter/ui.py:730
+#: src/files_converter/ui.py:233 src/files_converter/ui.py:736
 msgid "About"
 msgstr "Über"
 
-#: src/files_converter/ui.py:235 src/files_converter/ui.py:731
+#: src/files_converter/ui.py:237 src/files_converter/ui.py:737
 msgid "Report a bug"
 msgstr "Einen Fehler melden"
 
-#: src/files_converter/ui.py:239 src/files_converter/ui.py:732
+#: src/files_converter/ui.py:241 src/files_converter/ui.py:738
+msgid "Check for Updates"
+msgstr "Nach Updates suchen"
+
+#: src/files_converter/ui.py:245 src/files_converter/ui.py:739
 msgid "Support"
 msgstr "Support"
 
-#: src/files_converter/ui.py:250 src/files_converter/ui.py:735
+#: src/files_converter/ui.py:256 src/files_converter/ui.py:742
 msgid "Selected files:"
 msgstr "Ausgewählte Dateien:"
 
-#: src/files_converter/ui.py:275 src/files_converter/ui.py:739
+#: src/files_converter/ui.py:281 src/files_converter/ui.py:746
 msgid "Clear All"
 msgstr "Alles löschen"
 
-#: src/files_converter/ui.py:315 src/files_converter/ui.py:742
+#: src/files_converter/ui.py:321 src/files_converter/ui.py:749
 msgid "Convert"
 msgstr "Konvertieren"
 
-#: src/files_converter/ui.py:321 src/files_converter/ui.py:743
+#: src/files_converter/ui.py:327 src/files_converter/ui.py:750
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: src/files_converter/ui.py:336
+#: src/files_converter/ui.py:342
 msgid "Please choose files"
 msgstr "Bitte wählen Sie Dateien aus"
 
-#: src/files_converter/ui.py:355
+#: src/files_converter/ui.py:361
 msgid "No files selected for conversion."
 msgstr "Keine Dateien zur Konvertierung ausgewählt."
 
-#: src/files_converter/ui.py:368
+#: src/files_converter/ui.py:374
 msgid ""
 "No custom directory has been selected for conversion. Please select a "
 "directory to proceed."
@@ -111,82 +115,82 @@ msgstr ""
 "Es wurde kein benutzerdefiniertes Verzeichnis für die Konvertierung "
 "ausgewählt. Bitte wählen Sie ein Verzeichnis aus, um fortzufahren."
 
-#: src/files_converter/ui.py:402
+#: src/files_converter/ui.py:408
 msgid "No valid target format available for {}"
 msgstr "Kein gültiges Zielformat für {} verfügbar"
 
-#: src/files_converter/ui.py:452
+#: src/files_converter/ui.py:458
 msgid "Error converting {}: {}"
 msgstr "Fehler beim Konvertieren von {}: {}"
 
-#: src/files_converter/ui.py:456
+#: src/files_converter/ui.py:462
 msgid "Unexpected item in file list: {}"
 msgstr "Unerwartetes Element in der Dateiliste: {}"
 
-#: src/files_converter/ui.py:488
+#: src/files_converter/ui.py:494
 msgid "(Est. {} remaining)"
 msgstr "(voraussichtlich {} verbleibend)"
 
-#: src/files_converter/ui.py:502
+#: src/files_converter/ui.py:508
 msgid "Conversion completed"
 msgstr "Konvertierung abgeschlossen"
 
-#: src/files_converter/ui.py:503
+#: src/files_converter/ui.py:509
 msgid "Conversion completed successfully!"
 msgstr "Konvertierung erfolgreich abgeschlossen!"
 
-#: src/files_converter/ui.py:537
+#: src/files_converter/ui.py:543
 msgid "Clear all files?"
 msgstr "Alle Dateien löschen?"
 
-#: src/files_converter/ui.py:539
+#: src/files_converter/ui.py:545
 msgid "Are you sure you want to remove all files from the list?"
 msgstr ""
 "Sind Sie sicher, dass Sie alle Dateien aus der Liste entfernen möchten?"
 
-#: src/files_converter/ui.py:553
+#: src/files_converter/ui.py:559
 msgid "Select Output Directory"
 msgstr "Ausgabeverzeichnis auswählen"
 
-#: src/files_converter/ui.py:574
+#: src/files_converter/ui.py:580
 msgid "Error"
 msgstr "Fehler"
 
-#: src/files_converter/ui.py:587
+#: src/files_converter/ui.py:593
 msgid "Information"
 msgstr "Informationen"
 
-#: src/files_converter/ui.py:595
+#: src/files_converter/ui.py:601
 msgid "Please choose a folder"
 msgstr "Bitte wählen Sie einen Ordner aus"
 
-#: src/files_converter/ui.py:619
+#: src/files_converter/ui.py:625
 msgid "A file conversion utility with context menu integration"
 msgstr "Ein Datei-Konvertierungswerkzeug mit Kontextmenü-Integration"
 
-#: src/files_converter/ui.py:621
+#: src/files_converter/ui.py:627
 msgid "GitHub Repository"
 msgstr "GitHub-Repository"
 
-#: src/files_converter/ui.py:630
+#: src/files_converter/ui.py:636
 #, python-brace-format
 msgid "Warning: Icon file not found at {icon_path}"
 msgstr "Warnung: Symbol-Datei nicht gefunden unter {icon_path}"
 
-#: src/files_converter/ui.py:681
+#: src/files_converter/ui.py:687
 msgid "Error reading settings file. Using default settings."
 msgstr ""
 "Fehler beim Lesen der Einstellungsdatei. Standardwerte werden verwendet."
 
-#: src/files_converter/ui.py:773
+#: src/files_converter/ui.py:780
 msgid "Processing folder"
 msgstr "Ordner wird verarbeitet"
 
-#: src/files_converter/ui.py:773
+#: src/files_converter/ui.py:780
 msgid "Scanning for supported files..."
 msgstr "Scannen nach unterstützten Dateien..."
 
-#: src/files_converter/ui.py:837
+#: src/files_converter/ui.py:844
 #, python-brace-format
 msgid ""
 "Added {total_files} supported files.\n"
@@ -195,75 +199,93 @@ msgstr ""
 "Unterstützte Dateien {total_files} hinzugefügt.\n"
 "Scan abgeschlossen in {formatted_time}."
 
-#: src/files_converter/ui.py:841
+#: src/files_converter/ui.py:848
 msgid "No supported files found in the selected folder."
 msgstr "Keine unterstützten Dateien im ausgewählten Ordner gefunden."
 
-#: src/files_converter/ui.py:851 src/files_converter/ui.py:854
+#: src/files_converter/ui.py:858 src/files_converter/ui.py:861
 msgid "seconds"
 msgstr "Sekunden"
 
-#: src/files_converter/ui.py:854
+#: src/files_converter/ui.py:861
 msgid "{} minutes and"
 msgstr "{} Minuten und"
 
-#: src/files_converter/ui.py:909 src/files_converter/ui.py:1069
+#: src/files_converter/ui.py:902
+msgid ""
+"A new version ({}) is available. Would you like to open the download page?"
+msgstr ""
+"Eine neue Version ({}) ist verfügbar. Möchten Sie die Download-Seite öffnen?"
+
+#: src/files_converter/ui.py:908
+msgid "Update Available"
+msgstr "Update verfügbar"
+
+#: src/files_converter/ui.py:916
+msgid "You are using the latest version."
+msgstr "Sie verwenden die neueste Version."
+
+#: src/files_converter/ui.py:918
+msgid "Failed to check for updates: {}"
+msgstr "Fehler beim Überprüfen auf Updates: {}"
+
+#: src/files_converter/ui.py:942 src/files_converter/ui.py:1102
 msgid "Language:"
 msgstr "Sprache:"
 
-#: src/files_converter/ui.py:929 src/files_converter/ui.py:1070
+#: src/files_converter/ui.py:962 src/files_converter/ui.py:1103
 msgid "Theme:"
 msgstr "Thema:"
 
-#: src/files_converter/ui.py:933 src/files_converter/ui.py:1079
+#: src/files_converter/ui.py:966 src/files_converter/ui.py:1112
 msgid "System default"
 msgstr "Systemstandard"
 
-#: src/files_converter/ui.py:933 src/files_converter/ui.py:1079
+#: src/files_converter/ui.py:966 src/files_converter/ui.py:1112
 msgid "Light"
 msgstr "Hell"
 
-#: src/files_converter/ui.py:933 src/files_converter/ui.py:1079
+#: src/files_converter/ui.py:966 src/files_converter/ui.py:1112
 msgid "Dark"
 msgstr "Dunkel"
 
-#: src/files_converter/ui.py:949 src/files_converter/ui.py:1071
+#: src/files_converter/ui.py:982 src/files_converter/ui.py:1104
 msgid "Default output directory:"
 msgstr "Standard-Ausgabeverzeichnis:"
 
-#: src/files_converter/ui.py:954 src/files_converter/ui.py:1084
+#: src/files_converter/ui.py:987 src/files_converter/ui.py:1117
 msgid "Same as input"
 msgstr "Wie Eingabe"
 
-#: src/files_converter/ui.py:955 src/files_converter/ui.py:1085
+#: src/files_converter/ui.py:988 src/files_converter/ui.py:1118
 msgid "Choose directory"
 msgstr "Verzeichnis auswählen"
 
-#: src/files_converter/ui.py:956 src/files_converter/ui.py:1086
+#: src/files_converter/ui.py:989 src/files_converter/ui.py:1119
 msgid "Ask each time"
 msgstr "Jedes Mal fragen"
 
-#: src/files_converter/ui.py:964 src/files_converter/ui.py:1072
+#: src/files_converter/ui.py:997 src/files_converter/ui.py:1105
 msgid "Choose custom directory"
 msgstr "Benutzerdefiniertes Verzeichnis auswählen"
 
-#: src/files_converter/ui.py:967 src/files_converter/ui.py:1091
+#: src/files_converter/ui.py:1000 src/files_converter/ui.py:1125
 msgid "Not selected"
 msgstr "Nicht ausgewählt"
 
-#: src/files_converter/ui.py:986 src/files_converter/ui.py:1073
+#: src/files_converter/ui.py:1019 src/files_converter/ui.py:1106
 msgid "Enable notifications:"
 msgstr "Benachrichtigungen aktivieren:"
 
-#: src/files_converter/ui.py:997 src/files_converter/ui.py:1074
+#: src/files_converter/ui.py:1030 src/files_converter/ui.py:1107
 msgid "Auto-remove converted files:"
 msgstr "Konvertierte Dateien automatisch entfernen:"
 
-#: src/files_converter/ui.py:1029
+#: src/files_converter/ui.py:1062
 msgid "Select Custom Output Directory"
 msgstr "Benutzerdefiniertes Ausgabeverzeichnis auswählen"
 
-#: src/files_converter/ui.py:1096 src/files_converter/ui.py:1115
+#: src/files_converter/ui.py:1130 src/files_converter/ui.py:1149
 #, python-brace-format
 msgid ""
 "Current GTK theme: {gtk_theme}\n"
@@ -272,7 +294,7 @@ msgstr ""
 "Aktuelles GTK-Thema: {gtk_theme}\n"
 "\n"
 
-#: src/files_converter/ui.py:1098 src/files_converter/ui.py:1117
+#: src/files_converter/ui.py:1132 src/files_converter/ui.py:1151
 msgid ""
 "Note: If you're unable to get a light theme, it may be due to your system's "
 "GTK theme settings."
@@ -295,23 +317,23 @@ msgid "Inkscape is required for vector conversions but is not installed."
 msgstr ""
 "Inkscape ist für Vektor-Konvertierungen erforderlich, aber nicht installiert."
 
-#: src/files_converter/converter.py:385
+#: src/files_converter/converter.py:384
 msgid "Unsupported document conversion: {} to {}"
 msgstr "Nicht unterstützte Dokumentenkonvertierung: {} zu {}"
 
-#: src/files_converter/converter.py:408
+#: src/files_converter/converter.py:407
 msgid "Unsupported input archive format: {}"
 msgstr "Nicht unterstütztes Archivformat: {}"
 
-#: src/files_converter/converter.py:438
+#: src/files_converter/converter.py:437
 msgid "Unsupported output archive format: {}"
 msgstr "Nicht unterstütztes Archivformat: {}"
 
-#: src/files_converter/converter.py:441 src/files_converter/converter.py:443
+#: src/files_converter/converter.py:440 src/files_converter/converter.py:442
 msgid "Error during archive conversion: {}"
 msgstr "Fehler bei der Archivkonvertierung: {}"
 
-#: src/files_converter/converter.py:453
+#: src/files_converter/converter.py:452
 #, python-brace-format
 msgid "Failed to convert ebook from {input_path} to {output_path}"
 msgstr ""

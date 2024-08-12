@@ -62,6 +62,8 @@ setup(
         "pdf2docx",
         "striprtf",
         "odfpy",
+        "packaging",
+        "requests",
     ],
     entry_points={
         "console_scripts": [
