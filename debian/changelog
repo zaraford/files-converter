@@ -1,3 +1,8 @@
+files-converter (0.1.1-1) unstable; urgency=medium
+
+  * Fix import error.
+
+ -- Vladyslav Lodzhuk <vlad.lodgyk@gmail.com>  Sat, 12 Aug 2024 12:00:00 +0000
 files-converter (0.1.0-1) unstable; urgency=medium
 
   * Initial release.

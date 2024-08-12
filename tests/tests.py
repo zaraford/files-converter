@@ -1,8 +1,11 @@
 import unittest
 import os
 import tempfile
-from src.files_converter.converter import FileConverter
 
+try:
+    from files_converter.converter import FileConverter
+except ImportError:
+    from src.files_converter.converter import FileConverter
 
 class TestFileConverter(unittest.TestCase):
     def setUp(self):

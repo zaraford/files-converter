@@ -51,7 +51,7 @@ sudo apt-get install -y libcairo2-dev pkg-config python3-dev libgirepository1.0-
 #### Install from `.deb` Package
 To install Files Converter using the pre-built .deb package:
 ```
-sudo dpkg -i files-converter_0.1.0-1_all.deb
+sudo dpkg -i files-converter_0.1.1-1_all.deb
 sudo apt-get install -f
 ```
 This will install any missing dependencies and complete the installation.
@@ -64,7 +64,7 @@ dpkg-buildpackage -us -uc -b
 ```
 2. Install the generated `.deb` file:
 ```
-sudo dpkg -i ../files-converter_0.1.0-1_all.deb
+sudo dpkg -i ../files-converter_0.1.1-1_all.deb
 sudo apt-get install -f
 ```
 #### Uninstallation
@@ -81,7 +81,7 @@ sudo dpkg --purge files-converter
 #### Install from `.rpm` Package
 Install from `.rpm` package:
 ```
-sudo rpm -i files-converter-0.1.0-2.noarch.rpm
+sudo rpm -i files-converter-0.1.1-2.noarch.rpm
 ```
 #### Uninstallation
 To remove the package:

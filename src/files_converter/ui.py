@@ -21,7 +21,7 @@ import mimetypes
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 try:
-    from src.files_converter.converter import FileConverter
+    from files_converter.converter import FileConverter
 except ImportError:
     from converter import FileConverter
 
@@ -237,7 +237,7 @@ class ConversionWindow(Gtk.Window):
         self.report_bug = Gtk.MenuItem(label=_("Report a bug"))
         self.report_bug.connect("activate", self.open_report_bug)
         helpmenu.append(self.report_bug)
-        
+
         self.check_updates = Gtk.MenuItem(label=_("Check for Updates"))
         self.check_updates.connect("activate", self.check_for_updates)
         helpmenu.append(self.check_updates)
@@ -620,7 +620,7 @@ class ConversionWindow(Gtk.Window):
         about_dialog.set_modal(True)
 
         about_dialog.set_program_name("Files Converter")
-        about_dialog.set_version("0.1.0")
+        about_dialog.set_version("0.1.1")
         about_dialog.set_copyright("© 2024 Vladyslav Lodzhuk")
         about_dialog.set_comments(_("A file conversion utility with context menu integration"))
         about_dialog.set_website("https://github.com/zaraford/files-converter")
@@ -890,27 +890,35 @@ class ConversionWindow(Gtk.Window):
             self.file_list.remove(file_card)
             self.added_files.remove(file_card.get_file_path())
         self.update_clear_all_button()
-        
+
     def check_for_updates(self, widget):
-        current_version = "0.1.0"
+        current_version = "0.1.1"
         try:
-            response = requests.get("https://api.github.com/repos/zaraford/files-converter/releases/latest")
+            response = requests.get(
+                "https://api.github.com/repos/zaraford/files-converter/releases/latest"
+            )
             latest_release = response.json()
-            latest_version = latest_release["tag_name"].lstrip('v')
-            
+            latest_version = latest_release["tag_name"].lstrip("v")
+
             if version.parse(latest_version) > version.parse(current_version):
-                message = _("A new version ({}) is available. Would you like to open the download page?").format(latest_version)
+                message = _(
+                    "A new version ({}) is available. Would you like to open the download page?"
+                ).format(latest_version)
                 dialog = Gtk.MessageDialog(
                     transient_for=self,
                     flags=0,
                     message_type=Gtk.MessageType.QUESTION,
                     buttons=Gtk.ButtonsType.YES_NO,
-                    text=_("Update Available")
+                    text=_("Update Available"),
                 )
                 dialog.format_secondary_text(message)
                 response = dialog.run()
                 if response == Gtk.ResponseType.YES:
-                    Gtk.show_uri_on_window(self, "https://github.com/zaraford/files-converter/releases", Gdk.CURRENT_TIME)
+                    Gtk.show_uri_on_window(
+                        self,
+                        "https://github.com/zaraford/files-converter/releases",
+                        Gdk.CURRENT_TIME,
+                    )
                 dialog.destroy()
             else:
                 self.show_info_dialog(_("You are using the latest version."))
