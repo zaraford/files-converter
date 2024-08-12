@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
   workflow_dispatch:
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         sudo apt-get update
-        sudo apt-get install -y libcairo2-dev pkg-config python3-dev libgirepository1.0-dev
+        sudo apt-get install -y python3-dev python3-gi python3-nautilus libgirepository1.0-dev libcairo2-dev pkg-config python3-dev ffmpeg inkscape librsvg2-common rar unrar calibre
         pip install -r requirements.txt
 
     - name: Run tests
