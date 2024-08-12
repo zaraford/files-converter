@@ -19,7 +19,7 @@ import mimetypes
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 try:
-    from files_converter.converter import FileConverter
+    from src.files_converter.converter import FileConverter
 except ImportError:
     from converter import FileConverter
 

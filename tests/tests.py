@@ -1,7 +1,7 @@
 import unittest
 import os
 import tempfile
-from files_converter.converter import FileConverter
+from src.files_converter.converter import FileConverter
 
 
 class TestFileConverter(unittest.TestCase):
