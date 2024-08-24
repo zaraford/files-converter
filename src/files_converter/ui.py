@@ -620,7 +620,7 @@ class ConversionWindow(Gtk.Window):
         about_dialog.set_modal(True)
 
         about_dialog.set_program_name("Files Converter")
-        about_dialog.set_version("0.1.1")
+        about_dialog.set_version("0.1.2")
         about_dialog.set_copyright("© 2024 Vladyslav Lodzhuk")
         about_dialog.set_comments(_("A file conversion utility with context menu integration"))
         about_dialog.set_website("https://github.com/zaraford/files-converter")
@@ -892,7 +892,7 @@ class ConversionWindow(Gtk.Window):
         self.update_clear_all_button()
 
     def check_for_updates(self, widget):
-        current_version = "0.1.1"
+        current_version = "0.1.2"
         try:
             response = requests.get(
                 "https://api.github.com/repos/zaraford/files-converter/releases/latest"

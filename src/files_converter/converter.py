@@ -23,7 +23,7 @@ _ = gettext.gettext
 class FileConverter:
     def __init__(self):
         self.supported_formats = {
-            "photos": ["jpg", "png", "gif", "bmp", "tiff", "webp"],
+            "photos": ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"],
             "videos": ["mp4", "avi", "mov", "mkv", "webm"],
             "vectors": ["svg", "eps"],
             "audio": ["mp3", "wav", "ogg", "flac", "aac"],
@@ -68,9 +68,17 @@ class FileConverter:
 
     def _convert_photo(self, input_path, output_path, target_format):
         with Image.open(input_path) as img:
+            if img.mode in ("RGBA", "LA"):
+                # If the image has an alpha channel, convert to RGB with a white background
+                background = Image.new("RGB", img.size, (255, 255, 255))
+                background.paste(img, mask=img.split()[3])  # 3 is the alpha channel
+                img = background
+            elif img.mode != "RGB":
+                # For other modes (like 'P'), convert to RGB
+                img = img.convert("RGB")
+
             if target_format.lower() == "jpg":
                 target_format = "JPEG"
-                img = img.convert("RGB")
             elif target_format.lower() == "tiff":
                 target_format = "TIFF"
 
@@ -295,7 +303,7 @@ class FileConverter:
 
                     # Add the paragraph to RTF content
                     rtf_content += paragraph_text.replace("\n", "\\par\n") + "\\par\n"
-                
+
                 rtf_content += "}"
 
                 with open(output_path, "w", encoding="utf-8") as rtf_file:

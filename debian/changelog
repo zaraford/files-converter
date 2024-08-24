@@ -1,3 +1,8 @@
+files-converter (0.1.2-1) unstable; urgency=medium
+
+  * Added jpeg support.
+
+ -- Vladyslav Lodzhuk <vlad.lodgyk@gmail.com>  Sat, 24 Aug 2024 12:00:00 +0000
 files-converter (0.1.1-1) unstable; urgency=medium
 
   * Fix import error.

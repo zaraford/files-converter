@@ -7,6 +7,7 @@ try:
 except ImportError:
     from src.files_converter.converter import FileConverter
 
+
 class TestFileConverter(unittest.TestCase):
     def setUp(self):
         self.converter = FileConverter()
@@ -75,7 +76,7 @@ class TestFileConverter(unittest.TestCase):
                         self.fail(f"Error converting {input_format} to {target_format}: {str(e)}")
 
     def test_convert_image_files(self):
-        image_formats = ["jpg", "png", "gif", "bmp", "tiff", "webp"]
+        image_formats = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
         for input_format in image_formats:
             for target_format in image_formats:
                 if input_format != target_format:
