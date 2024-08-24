@@ -14,7 +14,7 @@ types including photos, videos, vectors, audio, documents, and archives.</p>
 
 ## Supported formats
 
-Photos: jpg, png, gif, bmp, tiff, webp
+Photos: jpg, jpeg, png, gif, bmp, tiff, webp
 
 Videos: mp4, avi, mov, mkv, webm
 
